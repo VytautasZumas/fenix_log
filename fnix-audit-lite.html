@@ -1,0 +1,3840 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fênix Audit Lite</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================
+   FÊNIX AUDIT LITE — CSS
+   ============================ */
+
+/* Fontes carregadas via <link> no <head> */
+
+:root {
+  --bg-primary: #0a0c10;
+  --bg-secondary: #12151c;
+  --bg-tertiary: #1a1e28;
+  --bg-card: #161a24;
+  --bg-input: #1e2230;
+  --bg-hover: #222838;
+  --border-primary: #2a3040;
+  --border-accent: #3a4050;
+  --text-primary: #e8eaf0;
+  --text-secondary: #8892a8;
+  --text-muted: #5a6478;
+  --accent-amber: #b8c2d3;
+  --accent-amber-dim: #64748b;
+  --accent-amber-glow: rgba(184,194,211,0.15);
+  --accent-amber-glow2: rgba(184,194,211,0.08);
+  --accent-red: #e05050;
+  --accent-red-dim: rgba(224,80,80,0.15);
+  --accent-green: #40c878;
+  --accent-green-dim: rgba(64,200,120,0.15);
+  --accent-blue: #4090e0;
+  --accent-blue-dim: rgba(64,144,224,0.15);
+  --accent-purple: #9068d0;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.5);
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --transition-fast: 150ms ease;
+  --transition-med: 250ms ease;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-secondary); }
+::-webkit-scrollbar-thumb { background: var(--border-accent); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ——— GLOBAL ELEMENTS ——— */
+
+h1, h2, h3, h4 { font-weight: 600; letter-spacing: -0.01em; }
+a { color: var(--accent-amber); text-decoration: none; }
+
+.app-container {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 0 16px;
+  width: 100%;
+}
+
+/* ——— BUTTONS ——— */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  outline: none;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.btn:active { transform: scale(0.97); }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-amber), var(--accent-amber-dim));
+  color: #0a0c10;
+  box-shadow: 0 2px 12px rgba(184,194,211,0.25);
+}
+.btn-primary:hover { box-shadow: 0 4px 20px rgba(184,194,211,0.35); filter: brightness(1.08); }
+
+.btn-secondary {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+}
+.btn-secondary:hover { background: var(--bg-hover); border-color: var(--border-accent); }
+
+.btn-danger {
+  background: var(--accent-red-dim);
+  color: var(--accent-red);
+  border: 1px solid rgba(224,80,80,0.25);
+}
+.btn-danger:hover { background: rgba(224,80,80,0.22); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 8px 14px;
+}
+.btn-ghost:hover { color: var(--text-primary); background: var(--bg-hover); }
+
+.btn-sm { padding: 8px 16px; font-size: 0.82rem; }
+
+.btn-block { display: flex; width: 100%; }
+
+.btn-icon {
+  width: 40px; height: 40px; padding: 0;
+  border-radius: var(--radius-sm);
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--bg-tertiary); color: var(--text-secondary);
+  border: 1px solid var(--border-primary); cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.btn-icon:hover { color: var(--text-primary); background: var(--bg-hover); }
+
+/* ——— FORM ELEMENTS ——— */
+
+.form-group { margin-bottom: 16px; }
+
+.form-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  transition: border-color var(--transition-fast);
+  outline: none;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--accent-amber);
+  box-shadow: 0 0 0 3px var(--accent-amber-glow);
+}
+
+.form-textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+
+.form-select { appearance: none; cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238892a8' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+
+.form-input-pin {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 1.8rem;
+  letter-spacing: 0.5em;
+  padding: 16px;
+  -webkit-text-security: disc;
+}
+
+.form-hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 480px) {
+  .form-row { grid-template-columns: 1fr; }
+}
+
+/* ——— HEADER ——— */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border-primary);
+  margin-bottom: 20px;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-logo {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem;
+}
+
+.header-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.header-subtitle {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* ——— UNLOCK SCREEN ——— */
+
+.section { display: none; }
+.section.active { display: block; }
+
+.unlock-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+  text-align: center;
+}
+
+.unlock-logo {
+  width: 80px; height: 80px;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--accent-amber), var(--accent-amber-dim));
+  border-radius: var(--radius-xl);
+  font-size: 2.8rem;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 40px var(--accent-amber-glow);
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 8px 40px var(--accent-amber-glow); }
+  50% { box-shadow: 0 8px 60px rgba(184,194,211,0.35); }
+}
+
+.unlock-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  background: linear-gradient(135deg, var(--text-primary), var(--accent-amber));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.unlock-desc {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  max-width: 340px;
+  margin-bottom: 32px;
+  line-height: 1.6;
+}
+
+.unlock-form {
+  width: 100%;
+  max-width: 320px;
+}
+
+.unlock-error {
+  background: var(--accent-red-dim);
+  color: var(--accent-red);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  margin-bottom: 12px;
+  display: none;
+}
+
+/* ——— CARDS ——— */
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: all var(--transition-fast);
+}
+
+.card-clickable { cursor: pointer; }
+.card-clickable:hover {
+  border-color: var(--accent-amber-dim);
+  background: var(--bg-hover);
+  box-shadow: 0 2px 16px var(--accent-amber-glow2);
+}
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.card-number {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--accent-amber);
+  font-weight: 500;
+}
+
+.card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.card-meta {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.card-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.badge-amber { background: var(--accent-amber-glow2); color: var(--accent-amber); border: 1px solid rgba(184,194,211,0.2); }
+.badge-green { background: var(--accent-green-dim); color: var(--accent-green); border: 1px solid rgba(64,200,120,0.2); }
+.badge-red { background: var(--accent-red-dim); color: var(--accent-red); border: 1px solid rgba(224,80,80,0.2); }
+.badge-blue { background: var(--accent-blue-dim); color: var(--accent-blue); border: 1px solid rgba(64,144,224,0.2); }
+
+/* ——— TABS ——— */
+
+.tabs {
+  display: flex;
+  gap: 2px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  padding: 3px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 10px 14px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.tab-btn:hover { color: var(--text-primary); }
+
+.tab-btn.active {
+  background: var(--bg-tertiary);
+  color: var(--accent-amber);
+  box-shadow: var(--shadow-sm);
+}
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ——— TIMELINE ——— */
+
+.timeline-item {
+  position: relative;
+  padding: 14px 16px 14px 40px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: 16px;
+  top: 18px;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--accent-amber);
+  box-shadow: 0 0 8px var(--accent-amber-glow);
+}
+
+.timeline-item.type-CASO_CRIADO::before { background: var(--accent-green); box-shadow: 0 0 8px rgba(64,200,120,0.3); }
+.timeline-item.type-ANEXO_IMAGEM::before { background: var(--accent-blue); box-shadow: 0 0 8px rgba(64,144,224,0.3); }
+.timeline-item.type-SEED_REGISTRADA::before { background: var(--accent-red); box-shadow: 0 0 8px rgba(224,80,80,0.3); }
+.timeline-item.type-TRANSACAO_APREENSAO::before { background: var(--accent-purple); box-shadow: 0 0 8px rgba(144,104,208,0.3); }
+.timeline-item.type-RECUPERACAO_CARTEIRA::before { background: var(--accent-green); box-shadow: 0 0 8px rgba(64,200,120,0.3); }
+.timeline-item.type-ENTREGA::before { background: var(--accent-amber-dim); box-shadow: 0 0 8px rgba(100,116,139,0.3); }
+.timeline-item.type-LOCALIZACAO_OBJETO::before { background: var(--accent-blue); box-shadow: 0 0 8px rgba(56, 189, 248, 0.3); }
+.timeline-item.type-ASSINATURA_RELATORIO::before { background: var(--accent-green); box-shadow: 0 0 8px rgba(64,200,120,0.3); }
+
+.timeline-type {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.timeline-summary {
+  font-size: 0.92rem;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.timeline-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+
+.timeline-hash {
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  cursor: pointer;
+  padding: 1px 6px;
+  background: var(--bg-input);
+  border-radius: 3px;
+  transition: color var(--transition-fast);
+}
+.timeline-hash:hover { color: var(--accent-amber); }
+
+.timeline-detail {
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: var(--bg-input);
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  border-left: 3px solid var(--border-accent);
+}
+
+/* ——— ATTACHMENTS ——— */
+
+.attachment-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.attachment-item:hover { border-color: var(--border-accent); background: var(--bg-hover); }
+
+.attachment-thumb {
+  width: 52px; height: 52px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  background: var(--bg-input);
+  flex-shrink: 0;
+}
+
+.attachment-info { flex: 1; min-width: 0; }
+
+.attachment-name {
+  font-size: 0.88rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.attachment-meta {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ——— MODAL ——— */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  animation: fade-in 0.2s ease;
+}
+
+.modal-overlay.active { display: flex; }
+
+@media (min-width: 640px) {
+  .modal-overlay.active { align-items: center; }
+}
+
+.modal {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 24px;
+  width: 100%;
+  max-width: 540px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slide-up 0.25s ease;
+}
+
+@media (min-width: 640px) {
+  .modal {
+    border-radius: var(--radius-lg);
+    max-height: 80vh;
+  }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(40px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.modal-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.modal-close {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: all var(--transition-fast);
+}
+.modal-close:hover { color: var(--text-primary); background: var(--bg-hover); }
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* ——— INTEGRITY BANNER ——— */
+
+.integrity-banner {
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 500;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.integrity-ok {
+  background: var(--accent-green-dim);
+  color: var(--accent-green);
+  border: 1px solid rgba(64,200,120,0.2);
+}
+
+.integrity-broken {
+  background: var(--accent-red-dim);
+  color: var(--accent-red);
+  border: 1px solid rgba(224,80,80,0.2);
+}
+
+/* ——— EXPORT SECTION ——— */
+
+.export-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.export-icon {
+  width: 48px; height: 48px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-md);
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.export-json-icon { background: var(--accent-amber-glow); }
+.export-pdf-icon { background: var(--accent-red-dim); }
+
+.export-info { flex: 1; }
+.export-info h4 { font-size: 0.95rem; margin-bottom: 3px; }
+.export-info p { font-size: 0.82rem; color: var(--text-muted); }
+
+/* ——— CASE DETAIL HEADER ——— */
+
+.detail-header {
+  margin-bottom: 20px;
+}
+
+.detail-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 0;
+  margin-bottom: 12px;
+  transition: color var(--transition-fast);
+  background: none;
+  border: none;
+  font-family: var(--font-sans);
+}
+.detail-back:hover { color: var(--accent-amber); }
+
+.detail-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.detail-case-number {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--accent-amber);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.detail-case-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 10px;
+}
+
+.detail-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.detail-meta-item {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.detail-meta-item span {
+  color: var(--text-secondary);
+}
+
+/* ——— EMPTY STATES ——— */
+
+.empty-state {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--text-muted);
+}
+
+.empty-state-icon {
+  font-size: 2.4rem;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.empty-state-text {
+  font-size: 0.92rem;
+  margin-bottom: 16px;
+}
+
+/* ——— FOOTER ——— */
+
+.app-footer {
+  text-align: center;
+  padding: 24px 16px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border-primary);
+  margin-top: 32px;
+  line-height: 1.7;
+}
+
+/* ——— IMAGE PREVIEW MODAL ——— */
+
+.img-preview-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.img-preview-overlay.active { display: flex; }
+.img-preview-overlay img {
+  max-width: 95vw;
+  max-height: 90vh;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ——— SEED EXTRA FIELDS ——— */
+
+.seed-fields { display: none; }
+.seed-fields.active { display: block; }
+
+/* ——— TRANSACTION FIELDS ——— */
+
+.tx-fields { display: none; }
+.tx-fields.active { display: block; }
+
+/* ——— RECOVERY FIELDS ——— */
+
+.recovery-fields { display: none; }
+.recovery-fields.active { display: block; }
+
+.recovery-img-preview {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: var(--radius-sm);
+  margin-top: 8px;
+  border: 1px solid var(--border-primary);
+}
+
+.recovery-img-preview-container {
+  position: relative;
+  display: inline-block;
+}
+
+.recovery-img-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: rgba(224,80,80,0.9);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ——— DELIVERY FIELDS ——— */
+
+.delivery-fields { display: none; }
+.delivery-fields.active { display: block; }
+
+.delivery-img-preview {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: var(--radius-sm);
+  margin-top: 8px;
+  border: 1px solid var(--border-primary);
+}
+
+.delivery-img-preview-container {
+  position: relative;
+  display: inline-block;
+}
+
+.delivery-img-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: rgba(224,80,80,0.9);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ——— LOCATION FIELDS ——— */
+
+.location-fields { display: none; }
+.location-fields.active { display: block; }
+
+.location-img-preview {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: var(--radius-sm);
+  margin-top: 8px;
+  border: 1px solid var(--border-primary);
+}
+
+.location-img-preview-container {
+  position: relative;
+  display: inline-block;
+}
+
+.location-img-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: rgba(224,80,80,0.9);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ——— SIGNATURE FIELDS ——— */
+
+.signature-fields { display: none; }
+.signature-fields.active { display: block; }
+
+/* ——— INSTITUTION LOGO UPLOAD ——— */
+
+.institution-config {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.institution-config h4 {
+  font-size: 0.9rem;
+  color: var(--accent-amber);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.logo-upload-area {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px;
+  border: 2px dashed var(--border-accent);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  margin-bottom: 12px;
+}
+
+.logo-upload-area:hover {
+  border-color: var(--accent-amber);
+  background: var(--accent-amber-glow2);
+}
+
+.logo-preview {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-sm);
+  object-fit: contain;
+  background: var(--bg-input);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.8rem;
+  color: var(--text-muted);
+  overflow: hidden;
+}
+
+.logo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.logo-upload-text {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.logo-upload-text strong {
+  display: block;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.logo-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* ——— TOAST ——— */
+
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.toast {
+  padding: 12px 20px;
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  font-weight: 500;
+  animation: toast-in 0.3s ease, toast-out 0.3s ease 2.7s forwards;
+  box-shadow: var(--shadow-lg);
+}
+
+.toast-success { background: var(--accent-green-dim); color: var(--accent-green); border: 1px solid rgba(64,200,120,0.25); }
+.toast-error { background: var(--accent-red-dim); color: var(--accent-red); border: 1px solid rgba(224,80,80,0.25); }
+.toast-info { background: var(--accent-blue-dim); color: var(--accent-blue); border: 1px solid rgba(64,144,224,0.25); }
+
+@keyframes toast-in { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes toast-out { from { opacity: 1; } to { opacity: 0; } }
+
+/* ——— UTILITIES ——— */
+
+.mt-8 { margin-top: 8px; }
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
+.mb-8 { margin-bottom: 8px; }
+.mb-16 { margin-bottom: 16px; }
+.text-center { text-align: center; }
+.hidden { display: none !important; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.gap-8 { gap: 8px; }
+
+</style>
+</head>
+<body>
+
+<!-- ========== SEÇÃO: DESBLOQUEIO ========== -->
+<div id="sectionUnlock" class="section active">
+  <div class="unlock-screen">
+    <div class="unlock-logo">🔥</div>
+    <h1 class="unlock-title">Fênix Audit Lite</h1>
+    <p class="unlock-desc">Aplicação local para registro forense de criptoativos. Todos os dados ficam armazenados apenas neste navegador.</p>
+    <div class="unlock-form">
+      <div id="unlockError" class="unlock-error"></div>
+
+      <!-- Formulário: definir PIN (primeiro uso) -->
+      <div id="pinSetupForm" style="display:none;">
+        <div class="form-group">
+          <label class="form-label">Defina seu PIN</label>
+          <input id="pinSetup1" type="password" inputmode="numeric" class="form-input form-input-pin" maxlength="8" placeholder="••••" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirme o PIN</label>
+          <input id="pinSetup2" type="password" inputmode="numeric" class="form-input form-input-pin" maxlength="8" placeholder="••••" autocomplete="off">
+        </div>
+        <button class="btn btn-primary btn-block" onclick="handleSetPin()">Definir PIN</button>
+        <p class="form-hint mt-8 text-center">Mínimo 4 dígitos. PIN armazenado como hash local.</p>
+      </div>
+
+      <!-- Formulário: desbloquear -->
+      <div id="pinUnlockForm" style="display:none;">
+        <div class="form-group">
+          <label class="form-label">PIN de acesso</label>
+          <input id="pinInput" type="password" inputmode="numeric" class="form-input form-input-pin" maxlength="8" placeholder="••••" autocomplete="off"
+                 onkeydown="if(event.key==='Enter')handleUnlock()">
+        </div>
+        <button class="btn btn-primary btn-block" onclick="handleUnlock()">Desbloquear</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SEÇÃO: LISTA DE CASOS ========== -->
+<div id="sectionCaseList" class="section">
+  <div class="app-container">
+    <div class="header">
+      <div class="header-brand">
+        <div class="header-logo" id="headerLogoList">🔥</div>
+        <div>
+          <div class="header-title" id="headerTitleList">Fênix Audit Lite</div>
+          <div class="header-subtitle" id="headerSubtitleList">Registro forense local</div>
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="handleLock()">🔒 Trancar</button>
+    </div>
+
+    <!-- Configuração da Instituição -->
+    <div class="institution-config">
+      <h4>🏛 Instituição</h4>
+      <div class="form-group">
+        <label class="form-label">Nome da instituição</label>
+        <input id="institutionName" class="form-input" placeholder="Ex: Polícia Civil do Estado de Goiás" onchange="saveInstitutionConfig()">
+      </div>
+      <label class="form-label">Brasão / Logo</label>
+      <div class="logo-upload-area" onclick="document.getElementById('logoFileInput').click()">
+        <div class="logo-preview" id="logoPreview">🏛</div>
+        <div class="logo-upload-text">
+          <strong>Clique para enviar o brasão</strong>
+          Aceita PNG, JPG ou SVG (máx. 500 KB)
+        </div>
+      </div>
+      <input type="file" id="logoFileInput" accept="image/png,image/jpeg,image/svg+xml" style="display:none;" onchange="handleLogoUpload(event)">
+      <div class="logo-actions" id="logoActions" style="display:none;">
+        <button class="btn btn-danger btn-sm" onclick="removeLogo()">🗑 Remover logo</button>
+      </div>
+    </div>
+
+    <div class="flex-between mb-16">
+      <h2 style="font-size:1.15rem;">Casos</h2>
+      <button class="btn btn-primary btn-sm" onclick="openNewCaseModal()">＋ Novo caso</button>
+    </div>
+
+    <div id="caseListContainer"></div>
+
+    <div class="app-footer">
+      <div>Fênix Audit Lite v1.0 — Protótipo forense local</div>
+      <div>Dados armazenados apenas neste navegador. Exporte regularmente.</div>
+      <div style="margin-top:6px;">O PIN é uma barreira local simples; não substitui criptografia forte.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SEÇÃO: DETALHE DO CASO ========== -->
+<div id="sectionCaseDetail" class="section">
+  <div class="app-container">
+    <div class="header">
+      <div class="header-brand">
+        <div class="header-logo" id="headerLogoDetail">🔥</div>
+        <div>
+          <div class="header-title" id="headerTitleDetail">Fênix Audit Lite</div>
+          <div class="header-subtitle" id="headerSubtitleDetail">Registro forense local</div>
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="handleLock()">🔒 Trancar</button>
+    </div>
+
+    <div class="detail-header">
+      <button class="detail-back" onclick="showCaseList()">← Voltar para casos</button>
+      <div id="detailHeaderInfo"></div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="timeline" onclick="switchTab('timeline')">📋 Linha do tempo</button>
+      <button class="tab-btn" data-tab="attachments" onclick="switchTab('attachments')">📎 Anexos</button>
+      <button class="tab-btn" data-tab="export" onclick="switchTab('export')">📤 Exportar</button>
+    </div>
+
+    <div id="tabTimeline" class="tab-content active">
+      <div class="flex-between mb-16">
+        <button class="btn btn-secondary btn-sm" onclick="verifyAndShowIntegrity()">🔗 Verificar integridade</button>
+        <button class="btn btn-primary btn-sm" onclick="openNewEventModal()">＋ Novo evento</button>
+      </div>
+      <div id="integrityBanner" style="display:none;"></div>
+      <div id="timelineContainer"></div>
+    </div>
+
+    <div id="tabAttachments" class="tab-content">
+      <div class="flex-between mb-16">
+        <span style="font-size:0.9rem;color:var(--text-secondary);">Imagens vinculadas ao caso</span>
+        <button class="btn btn-primary btn-sm" onclick="triggerFileInput()">＋ Adicionar imagem</button>
+      </div>
+      <input type="file" id="fileInputHidden" accept="image/*" capture="environment" style="display:none;" onchange="handleFileSelected(event)">
+      <div id="attachmentsContainer"></div>
+    </div>
+
+    <div id="tabExport" class="tab-content">
+      <div id="exportContainer"></div>
+    </div>
+
+    <div class="app-footer">
+      <div>Fênix Audit Lite v1.0 — Protótipo forense local</div>
+      <div>Faça exportações regulares em JSON e/ou PDF para backup.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MODAL: NOVO CASO ========== -->
+<div id="modalNewCase" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">Novo caso</h3>
+      <button class="modal-close" onclick="closeModal('modalNewCase')">&times;</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Número do caso *</label>
+      <input id="ncCaseNumber" class="form-input" placeholder="Ex: IPL 2026/0042">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Título *</label>
+      <input id="ncTitle" class="form-input" placeholder="Ex: Busca e apreensão — Operação X">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Órgão</label>
+        <input id="ncOrg" class="form-input" placeholder="Opcional">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Unidade</label>
+        <input id="ncUnit" class="form-input" placeholder="Opcional">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Autoridade</label>
+        <input id="ncAuthority" class="form-input" placeholder="Opcional">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Local</label>
+        <input id="ncLocation" class="form-input" placeholder="Opcional">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notas iniciais</label>
+      <textarea id="ncNotes" class="form-textarea" placeholder="Observações iniciais..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modalNewCase')">Cancelar</button>
+      <button class="btn btn-primary" onclick="handleCreateCase()">Criar caso</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MODAL: NOVO EVENTO ========== -->
+<div id="modalNewEvent" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">Novo evento</h3>
+      <button class="modal-close" onclick="closeModal('modalNewEvent')">&times;</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Tipo</label>
+      <select id="neType" class="form-select" onchange="toggleSeedFields()">
+        <option value="NOTA">Nota</option>
+        <option value="SEED_REGISTRADA">Seed / Chave registrada</option>
+        <option value="TRANSACAO_APREENSAO">Transação de apreensão</option>
+        <option value="RECUPERACAO_CARTEIRA">Recuperação de carteira</option>
+        <option value="ENTREGA">Entrega / Repasse</option>
+        <option value="LOCALIZACAO_OBJETO">Localização de Objeto</option>
+        <option value="ASSINATURA_RELATORIO">Assinatura do Relatório</option>
+        <option value="OUTRO">Outro</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Resumo *</label>
+      <input id="neSummary" class="form-input" placeholder="Resumo curto do evento">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Detalhes</label>
+      <textarea id="neDetail" class="form-textarea" placeholder="Detalhes adicionais (opcional)"></textarea>
+    </div>
+
+    <!-- Campos extras SEED_REGISTRADA -->
+    <div id="seedFields" class="seed-fields">
+      <hr style="border:none;border-top:1px solid var(--border-primary);margin:16px 0;">
+      <h4 style="font-size:0.9rem;color:var(--accent-red);margin-bottom:12px;">⚠ Dados sensíveis</h4>
+      <div class="form-group">
+        <label class="form-label">Tipo sensível</label>
+        <select id="neSensitiveType" class="form-select">
+          <option value="seed">Seed phrase</option>
+          <option value="private_key">Chave privada</option>
+          <option value="passphrase">Passphrase</option>
+          <option value="pin">PIN / Senha</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Modo de registro</label>
+        <select id="neMode" class="form-select" onchange="toggleSeedValueField()">
+          <option value="existence_only">Apenas existência (não salva valor)</option>
+          <option value="partial">Parcial (fragmento)</option>
+          <option value="masked">Mascarado (salva, mas não exibe)</option>
+        </select>
+      </div>
+      <div id="seedValueGroup" class="form-group" style="display:none;">
+        <label class="form-label">Valor / Fragmento</label>
+        <textarea id="neSeedValue" class="form-textarea" placeholder="Conteúdo sensível..."></textarea>
+        <p class="form-hint">⚠ Dados sensíveis serão armazenados no localStorage deste navegador.</p>
+      </div>
+      <div id="seedReportGroup" class="form-group" style="display:none; margin-top: 10px; margin-bottom: 16px;">
+        <label class="checkbox-container" style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+          <input type="checkbox" id="neSeedShowInReport" style="width:16px; height:16px; cursor:pointer;">
+          <span style="font-size:0.85rem; color:var(--text-secondary);">Exibir valor/seed no relatório impresso/PDF</span>
+        </label>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notas operacionais (não secretas)</label>
+        <textarea id="neSeedNotes" class="form-textarea" placeholder="Notas operacionais..."></textarea>
+      </div>
+    </div>
+
+    <!-- Campos extras TRANSACAO_APREENSAO -->
+    <div id="txFields" class="tx-fields">
+      <hr style="border:none;border-top:1px solid var(--border-primary);margin:16px 0;">
+      <h4 style="font-size:0.9rem;color:var(--accent-blue);margin-bottom:12px;">🔗 Dados da transação de apreensão</h4>
+      <div class="form-group">
+        <label class="form-label">Endereço da carteira institucional (destino)</label>
+        <input id="neTxWalletDest" class="form-input" placeholder="Ex: 0x1234...abcd ou bc1q..." style="font-family:var(--font-mono);font-size:0.88rem;">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Endereço da carteira de origem</label>
+        <input id="neTxWalletOrigin" class="form-input" placeholder="Ex: 0xabcd...1234 ou bc1q..." style="font-family:var(--font-mono);font-size:0.88rem;">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Valor enviado</label>
+          <input id="neTxAmount" class="form-input" placeholder="Ex: 1.5 BTC" style="font-family:var(--font-mono);">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Taxa paga</label>
+          <input id="neTxFee" class="form-input" placeholder="Ex: 0.0001 BTC" style="font-family:var(--font-mono);">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Hash da transação</label>
+        <input id="neTxHash" class="form-input" placeholder="Ex: 0x7f3e...b2c1" style="font-family:var(--font-mono);font-size:0.88rem;">
+      </div>
+      <div class="form-group">
+        <label class="form-label">URL do explorador</label>
+        <input id="neTxExplorerUrl" class="form-input" placeholder="Ex: https://etherscan.io/tx/0x...">
+        <p class="form-hint">Link para verificar a transação no explorador de blocos</p>
+      </div>
+    </div>
+
+    <!-- Campos extras RECUPERACAO_CARTEIRA -->
+    <div id="recoveryFields" class="recovery-fields">
+      <hr style="border:none;border-top:1px solid var(--border-primary);margin:16px 0;">
+      <h4 style="font-size:0.9rem;color:var(--accent-green);margin-bottom:12px;">🔄 Dados da recuperação de carteira</h4>
+      <div class="form-group">
+        <label class="form-label">Descrição do procedimento *</label>
+        <textarea id="neRecoveryDesc" class="form-textarea" rows="4" placeholder="Descreva passo a passo o procedimento de recuperação realizado..."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Marca do dispositivo/carteira</label>
+          <input id="neRecoveryBrand" class="form-input" placeholder="Ex: Ledger, Trezor...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Modelo</label>
+          <input id="neRecoveryModel" class="form-input" placeholder="Ex: Nano S Plus...">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nome do software / aplicativo</label>
+        <input id="neRecoverySoftware" class="form-input" placeholder="Ex: Ledger Live, Electrum, MetaMask...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Imagem do processo (opcional)</label>
+        <button class="btn btn-secondary btn-sm" type="button" onclick="document.getElementById('recoveryImageInput').click()">📷 Selecionar imagem</button>
+        <input type="file" id="recoveryImageInput" accept="image/*" style="display:none;" onchange="handleRecoveryImageSelect(event)">
+        <div id="recoveryImgPreviewContainer"></div>
+      </div>
+    </div>
+
+    <!-- Campos extras ENTREGA -->
+    <div id="deliveryFields" class="delivery-fields">
+      <hr style="border:none;border-top:1px solid var(--border-primary);margin:16px 0;">
+      <h4 style="font-size:0.9rem;color:var(--accent-amber-dim);margin-bottom:12px;">📦 Dados da Entrega / Repasse</h4>
+      <div class="form-group">
+        <label class="form-label">Objeto *</label>
+        <input id="neDeliveryObject" class="form-input" placeholder="Ex: Carteira de papel, Ledger Nano X...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Conteúdo e Informações</label>
+        <textarea id="neDeliveryContent" class="form-textarea" placeholder="Detalhes do conteúdo do objeto entregue..."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Entregue por *</label>
+          <input id="neDeliveryBy" class="form-input" placeholder="Ex: João Silva">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Recebido por *</label>
+          <input id="neDeliveryTo" class="form-input" placeholder="Ex: Pedro Souza">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Assinatura Digital - Senha do Entregador (opcional)</label>
+          <input id="neDeliveryByPassphrase" type="password" class="form-input" placeholder="Senha para assinatura digital">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Assinatura Digital - Senha do Recebedor (opcional)</label>
+          <input id="neDeliveryToPassphrase" type="password" class="form-input" placeholder="Senha para assinatura digital">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Hashes dos arquivos repassados (opcional)</label>
+        <textarea id="neDeliveryFileHashes" class="form-textarea" placeholder="Cole os hashes dos arquivos repassados (um por linha)..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Foto da entrega (opcional)</label>
+        <button class="btn btn-secondary btn-sm" type="button" onclick="document.getElementById('deliveryImageInput').click()">📷 Selecionar imagem</button>
+        <input type="file" id="deliveryImageInput" accept="image/*" style="display:none;" onchange="handleDeliveryImageSelect(event)">
+        <div id="deliveryImgPreviewContainer"></div>
+      </div>
+    </div>
+
+    <!-- Campos extras LOCALIZACAO_OBJETO -->
+    <div id="locationFields" class="location-fields">
+      <hr style="border:none;border-top:1px solid var(--border-primary);margin:16px 0;">
+      <h4 style="font-size:0.9rem;color:var(--accent-blue);margin-bottom:12px;">🔍 Localização de Objeto</h4>
+      <div class="form-group">
+        <label class="form-label">Tipo de Objeto *</label>
+        <select id="neLocationObjectType" class="form-select">
+          <option value="dispositivo">Dispositivo</option>
+          <option value="anotacao">Anotação</option>
+          <option value="arquivo">Arquivo</option>
+          <option value="arma_fogo">Arma de fogo</option>
+          <option value="outro">Outro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Descrição do objeto *</label>
+        <input id="neLocationDescription" class="form-input" placeholder="Ex: Celular Samsung Galaxy S21 preto, Caderno espiral azul...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Localização quando encontrado *</label>
+        <input id="neLocationWhereFound" class="form-input" placeholder="Ex: Gaveta da escrivaninha do quarto principal, Em cima da mesa da sala...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Foto do objeto (opcional)</label>
+        <button class="btn btn-secondary btn-sm" type="button" onclick="document.getElementById('locationImageInput').click()">📷 Selecionar imagem</button>
+        <input type="file" id="locationImageInput" accept="image/*" style="display:none;" onchange="handleLocationImageSelect(event)">
+        <div id="locationImgPreviewContainer"></div>
+      </div>
+    </div>
+
+    <!-- Campos extras ASSINATURA_RELATORIO -->
+    <div id="signatureFields" class="signature-fields">
+      <hr style="border:none;border-top:1px solid var(--border-primary);margin:16px 0;">
+      <h4 style="font-size:0.9rem;color:var(--accent-green);margin-bottom:12px;">✍️ Dados da Assinatura do Relatório</h4>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nome *</label>
+          <input id="neSignatureName" class="form-input" placeholder="Ex: João Silva">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cargo *</label>
+          <select id="neSignatureRole" class="form-select">
+            <option value="" disabled selected>Selecione o cargo</option>
+            <option value="Delegado de Polícia">Delegado de Polícia</option>
+            <option value="Oficial Investigador">Oficial Investigador</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Assinatura Digital - Senha (opcional)</label>
+        <input id="neSignaturePassphrase" type="password" class="form-input" placeholder="Senha para assinatura digital">
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('modalNewEvent')">Cancelar</button>
+      <button class="btn btn-primary" onclick="handleCreateEvent()">Registrar evento</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MODAL: PREVIEW IMAGEM ========== -->
+<div id="imgPreviewOverlay" class="img-preview-overlay" onclick="closeImagePreview()">
+  <img id="imgPreviewImg" src="" alt="Preview">
+</div>
+
+<!-- ========== TOAST CONTAINER ========== -->
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- ======================================================
+     JAVASCRIPT — FÊNIX AUDIT LITE
+     ====================================================== -->
+<script>
+/* ========================================
+   CONSTANTES E ESTADO GLOBAL
+   ======================================== */
+
+const STORAGE_KEY = "fnixAuditLiteState";
+const INSTITUTION_KEY = "fnixInstitutionConfig";
+let appState = null;
+let currentCaseId = null;
+let institutionConfig = { name: "", logoDataUrl: null };
+
+/* ========================================
+   LOCALSTORAGE
+   ======================================== */
+
+function loadStateFromStorage() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) {
+    return { pinHash: null, cases: [], eventsByCase: {}, attachmentsByCase: {} };
+  }
+  try {
+    const parsed = JSON.parse(raw);
+    return {
+      pinHash: parsed.pinHash || null,
+      cases: Array.isArray(parsed.cases) ? parsed.cases : [],
+      eventsByCase: parsed.eventsByCase || {},
+      attachmentsByCase: parsed.attachmentsByCase || {}
+    };
+  } catch (e) {
+    console.error("Erro ao carregar estado:", e);
+    return { pinHash: null, cases: [], eventsByCase: {}, attachmentsByCase: {} };
+  }
+}
+
+function saveStateToStorage() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+  } catch (e) {
+    console.error("Erro ao salvar estado:", e);
+    showToast("Erro ao salvar dados! Verifique o espaço de armazenamento.", "error");
+  }
+}
+
+/* ========================================
+   CRYPTO — SHA-256
+   ======================================== */
+
+async function computeSha256Hex(str) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(str);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+/* ========================================
+   ASSINATURA DIGITAL CRIPTOGRÁFICA
+   ======================================== */
+
+function bufToHex(buffer) {
+  return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join('');
+}
+
+function hexToBuf(hex) {
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < bytes.length; i++) {
+    bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
+  }
+  return bytes.buffer;
+}
+
+async function deriveAesKey(passphrase, salt) {
+  const encoder = new TextEncoder();
+  const passphraseBytes = encoder.encode(passphrase);
+  
+  const baseKey = await crypto.subtle.importKey(
+    "raw",
+    passphraseBytes,
+    { name: "PBKDF2" },
+    false,
+    ["deriveBits", "deriveKey"]
+  );
+  
+  return await crypto.subtle.deriveKey(
+    {
+      name: "PBKDF2",
+      salt: salt,
+      iterations: 100000,
+      hash: "SHA-256"
+    },
+    baseKey,
+    { name: "AES-GCM", length: 256 },
+    false,
+    ["encrypt", "decrypt"]
+  );
+}
+
+async function generateDigitalSignature(passphrase, dataString) {
+  const keyPair = await crypto.subtle.generateKey(
+    {
+      name: "ECDSA",
+      namedCurve: "P-256"
+    },
+    true,
+    ["sign", "verify"]
+  );
+
+  const publicKeyJwk = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
+  const privateKeyJwk = await crypto.subtle.exportKey("jwk", keyPair.privateKey);
+  const privateKeyBytes = new TextEncoder().encode(JSON.stringify(privateKeyJwk));
+
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const aesKey = await deriveAesKey(passphrase, salt);
+
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ciphertextBuffer = await crypto.subtle.encrypt(
+    {
+      name: "AES-GCM",
+      iv: iv
+    },
+    aesKey,
+    privateKeyBytes
+  );
+
+  const dataBytes = new TextEncoder().encode(dataString);
+  const signatureBuffer = await crypto.subtle.sign(
+    {
+      name: "ECDSA",
+      hash: { name: "SHA-256" }
+    },
+    keyPair.privateKey,
+    dataBytes
+  );
+
+  return {
+    signatureHex: bufToHex(signatureBuffer),
+    publicKeyJwk: publicKeyJwk,
+    encryptedPrivateKey: {
+      ciphertextHex: bufToHex(ciphertextBuffer),
+      saltHex: bufToHex(salt),
+      ivHex: bufToHex(iv)
+    }
+  };
+}
+
+async function verifyDigitalSignature(dataString, signatureHex, publicKeyJwk) {
+  try {
+    const publicKey = await crypto.subtle.importKey(
+      "jwk",
+      publicKeyJwk,
+      {
+        name: "ECDSA",
+        namedCurve: "P-256"
+      },
+      true,
+      ["verify"]
+    );
+
+    const dataBytes = new TextEncoder().encode(dataString);
+    const signatureBuffer = hexToBuf(signatureHex);
+
+    return await crypto.subtle.verify(
+      {
+        name: "ECDSA",
+        hash: { name: "SHA-256" }
+      },
+      publicKey,
+      signatureBuffer,
+      dataBytes
+    );
+  } catch (e) {
+    console.error("Erro na verificação da assinatura digital:", e);
+    return false;
+  }
+}
+
+async function getPublicKeyHash(publicKeyJwk) {
+  const normalizedStr = `${publicKeyJwk.x}:${publicKeyJwk.y}`;
+  return await computeSha256Hex(normalizedStr);
+}
+
+async function hashPin(pin) {
+  return await computeSha256Hex("fnix-pin:" + pin);
+}
+
+/* ========================================
+   PIN
+   ======================================== */
+
+function isPinConfigured() {
+  return !!appState.pinHash;
+}
+
+async function setNewPin(pin) {
+  appState.pinHash = await hashPin(pin);
+  saveStateToStorage();
+}
+
+async function checkPin(pin) {
+  const h = await hashPin(pin);
+  return h === appState.pinHash;
+}
+
+/* ========================================
+   SEÇÕES / NAVEGAÇÃO
+   ======================================== */
+
+function showSection(id) {
+  document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+  const el = document.getElementById(id);
+  if (el) el.classList.add("active");
+}
+
+function renderUnlockScreen() {
+  showSection("sectionUnlock");
+  const setupForm = document.getElementById("pinSetupForm");
+  const unlockForm = document.getElementById("pinUnlockForm");
+  const errorEl = document.getElementById("unlockError");
+  errorEl.style.display = "none";
+
+  if (isPinConfigured()) {
+    setupForm.style.display = "none";
+    unlockForm.style.display = "block";
+    setTimeout(() => document.getElementById("pinInput").focus(), 100);
+  } else {
+    setupForm.style.display = "block";
+    unlockForm.style.display = "none";
+    setTimeout(() => document.getElementById("pinSetup1").focus(), 100);
+  }
+}
+
+function showUnlockError(msg) {
+  const el = document.getElementById("unlockError");
+  el.textContent = msg;
+  el.style.display = "block";
+}
+
+async function handleSetPin() {
+  const p1 = document.getElementById("pinSetup1").value.trim();
+  const p2 = document.getElementById("pinSetup2").value.trim();
+  if (!p1 || p1.length < 4) {
+    showUnlockError("O PIN deve ter pelo menos 4 caracteres.");
+    return;
+  }
+  if (p1 !== p2) {
+    showUnlockError("Os PINs não coincidem.");
+    return;
+  }
+  await setNewPin(p1);
+  document.getElementById("pinSetup1").value = "";
+  document.getElementById("pinSetup2").value = "";
+  showToast("PIN configurado com sucesso!", "success");
+  showCaseList();
+}
+
+async function handleUnlock() {
+  const pin = document.getElementById("pinInput").value.trim();
+  if (!pin) {
+    showUnlockError("Informe o PIN.");
+    return;
+  }
+  const ok = await checkPin(pin);
+  if (!ok) {
+    showUnlockError("PIN incorreto.");
+    document.getElementById("pinInput").value = "";
+    return;
+  }
+  document.getElementById("pinInput").value = "";
+  showCaseList();
+}
+
+function handleLock() {
+  currentCaseId = null;
+  renderUnlockScreen();
+}
+
+function showCaseList() {
+  currentCaseId = null;
+  showSection("sectionCaseList");
+  renderInstitutionConfig();
+  renderCaseList();
+}
+
+/* ========================================
+   LISTA DE CASOS
+   ======================================== */
+
+function renderCaseList() {
+  const container = document.getElementById("caseListContainer");
+  if (appState.cases.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📁</div>
+        <div class="empty-state-text">Nenhum caso registrado</div>
+        <button class="btn btn-primary" onclick="openNewCaseModal()">＋ Criar primeiro caso</button>
+      </div>`;
+    return;
+  }
+
+  let html = "";
+  const sorted = [...appState.cases].sort((a, b) => new Date(b.openedAt) - new Date(a.openedAt));
+  for (const c of sorted) {
+    const evts = getEventsForCase(c.id);
+    const atts = getAttachmentsForCase(c.id);
+    html += `
+      <div class="card card-clickable" onclick="openCaseDetail('${c.id}')">
+        <div class="card-header">
+          <div>
+            <div class="card-number">${esc(c.caseNumber)}</div>
+            <div class="card-title">${esc(c.title)}</div>
+          </div>
+          <span class="card-badge badge-amber">${evts.length} evento${evts.length !== 1 ? 's' : ''}</span>
+        </div>
+        <div class="card-meta">
+          ${c.org ? `<span>🏢 ${esc(c.org)}</span>` : ''}
+          ${c.authority ? `<span>👤 ${esc(c.authority)}</span>` : ''}
+          <span>📅 ${formatDate(c.openedAt)}</span>
+          ${atts.length > 0 ? `<span>📎 ${atts.length} anexo${atts.length !== 1 ? 's' : ''}</span>` : ''}
+        </div>
+      </div>`;
+  }
+  container.innerHTML = html;
+}
+
+/* ========================================
+   CRIAÇÃO DE CASO
+   ======================================== */
+
+function openNewCaseModal() {
+  document.getElementById("ncCaseNumber").value = "";
+  document.getElementById("ncTitle").value = "";
+  document.getElementById("ncOrg").value = "";
+  document.getElementById("ncUnit").value = "";
+  document.getElementById("ncAuthority").value = "";
+  document.getElementById("ncLocation").value = "";
+  document.getElementById("ncNotes").value = "";
+  openModal("modalNewCase");
+}
+
+async function handleCreateCase() {
+  const caseNumber = document.getElementById("ncCaseNumber").value.trim();
+  const title = document.getElementById("ncTitle").value.trim();
+  if (!caseNumber || !title) {
+    showToast("Preencha o número e o título do caso.", "error");
+    return;
+  }
+  const caseData = {
+    caseNumber,
+    title,
+    org: document.getElementById("ncOrg").value.trim() || null,
+    unit: document.getElementById("ncUnit").value.trim() || null,
+    authority: document.getElementById("ncAuthority").value.trim() || null,
+    location: document.getElementById("ncLocation").value.trim() || null,
+    notes: document.getElementById("ncNotes").value.trim() || null,
+  };
+  await createCase(caseData);
+  closeModal("modalNewCase");
+  renderCaseList();
+  showToast("Caso criado com sucesso!", "success");
+}
+
+async function createCase(caseData) {
+  const id = "case-" + Date.now().toString();
+  const now = new Date().toISOString();
+
+  const newCase = {
+    id,
+    caseNumber: caseData.caseNumber,
+    title: caseData.title,
+    org: caseData.org || null,
+    unit: caseData.unit || null,
+    authority: caseData.authority || null,
+    location: caseData.location || null,
+    notes: caseData.notes || null,
+    openedAt: now
+  };
+
+  appState.cases.push(newCase);
+  if (!appState.eventsByCase[id]) appState.eventsByCase[id] = [];
+  if (!appState.attachmentsByCase[id]) appState.attachmentsByCase[id] = [];
+
+  const evt = await createCustodyEvent(id, "CASO_CRIADO", "Caso criado: " + caseData.caseNumber, null);
+  appState.eventsByCase[id].push(evt);
+
+  saveStateToStorage();
+  return newCase;
+}
+
+function getCaseById(caseId) {
+  return appState.cases.find(c => c.id === caseId) || null;
+}
+
+/* ========================================
+   EVENTOS DE CUSTÓDIA (CHAIN)
+   ======================================== */
+
+function getEventsForCase(caseId) {
+  return appState.eventsByCase[caseId] || [];
+}
+
+function getLastEventForCase(caseId) {
+  const events = getEventsForCase(caseId);
+  return events.length > 0 ? events[events.length - 1] : null;
+}
+
+async function createCustodyEvent(caseId, type, summary, detailObjOrString) {
+  const id = "evt-" + Date.now().toString() + "-" + Math.floor(Math.random() * 1000);
+  const now = new Date().toISOString();
+  const events = getEventsForCase(caseId);
+  const previous = events.length > 0 ? events[events.length - 1].hash : "ROOT";
+
+  const detail =
+    typeof detailObjOrString === "string"
+      ? detailObjOrString
+      : detailObjOrString
+        ? JSON.stringify(detailObjOrString)
+        : null;
+
+  const payload = JSON.stringify({
+    caseId,
+    type,
+    summary,
+    detail,
+    createdAt: now,
+    previousHash: previous
+  });
+
+  const hash = await computeSha256Hex(payload);
+
+  return { id, caseId, type, summary, detail, createdAt: now, previousHash: previous, hash };
+}
+
+async function verifyChainIntegrity(caseId) {
+  const events = getEventsForCase(caseId);
+  let previousHash = "ROOT";
+
+  for (let i = 0; i < events.length; i++) {
+    const e = events[i];
+    const payload = JSON.stringify({
+      caseId: e.caseId,
+      type: e.type,
+      summary: e.summary,
+      detail: e.detail,
+      createdAt: e.createdAt,
+      previousHash
+    });
+    const expectedHash = await computeSha256Hex(payload);
+    if (e.previousHash !== previousHash || e.hash !== expectedHash) {
+      return { ok: false, brokenAtIndex: i, eventId: e.id };
+    }
+    previousHash = e.hash;
+  }
+  return { ok: true };
+}
+
+/* ========================================
+   DETALHE DO CASO
+   ======================================== */
+
+async function openCaseDetail(caseId) {
+  currentCaseId = caseId;
+  showSection("sectionCaseDetail");
+  renderCaseDetailHeader(caseId);
+  await switchTab("timeline");
+}
+
+function renderCaseDetailHeader(caseId) {
+  const c = getCaseById(caseId);
+  if (!c) return;
+
+  const el = document.getElementById("detailHeaderInfo");
+  el.innerHTML = `
+    <div class="detail-case-number">${esc(c.caseNumber)}</div>
+    <div class="detail-case-title">${esc(c.title)}</div>
+    <div class="detail-meta-grid">
+      ${c.org ? `<div class="detail-meta-item">🏢 Órgão: <span>${esc(c.org)}</span></div>` : ''}
+      ${c.unit ? `<div class="detail-meta-item">🏛 Unidade: <span>${esc(c.unit)}</span></div>` : ''}
+      ${c.authority ? `<div class="detail-meta-item">👤 Autoridade: <span>${esc(c.authority)}</span></div>` : ''}
+      ${c.location ? `<div class="detail-meta-item">📍 Local: <span>${esc(c.location)}</span></div>` : ''}
+      <div class="detail-meta-item">📅 Abertura: <span>${formatDate(c.openedAt)}</span></div>
+    </div>
+    ${c.notes ? `<div style="margin-top:8px;font-size:0.84rem;color:var(--text-secondary);padding:8px 12px;background:var(--bg-input);border-radius:var(--radius-sm);border-left:3px solid var(--accent-amber);">${esc(c.notes)}</div>` : ''}
+  `;
+}
+
+/* ========================================
+   TABS
+   ======================================== */
+
+async function switchTab(tabName) {
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+
+  const btn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
+  if (btn) btn.classList.add("active");
+
+  if (tabName === "timeline") {
+    document.getElementById("tabTimeline").classList.add("active");
+    await renderTimeline(currentCaseId);
+  } else if (tabName === "attachments") {
+    document.getElementById("tabAttachments").classList.add("active");
+    renderAttachments(currentCaseId);
+  } else if (tabName === "export") {
+    document.getElementById("tabExport").classList.add("active");
+    renderExportSection(currentCaseId);
+  }
+}
+
+/* ========================================
+   TIMELINE
+   ======================================== */
+
+async function renderTimeline(caseId) {
+  const container = document.getElementById("timelineContainer");
+  const events = getEventsForCase(caseId);
+
+  if (events.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📋</div>
+        <div class="empty-state-text">Nenhum evento registrado</div>
+      </div>`;
+    return;
+  }
+
+  let html = "";
+  for (let i = events.length - 1; i >= 0; i--) {
+    const e = events[i];
+    const hashShort = e.hash.substring(0, 8);
+    let detailHtml = "";
+
+    if (e.detail) {
+      if (e.type === "SEED_REGISTRADA") {
+        try {
+          const dObj = JSON.parse(e.detail);
+          detailHtml = `
+            <div class="timeline-detail">
+              <div><strong>Tipo:</strong> ${esc(dObj.sensitiveType || "—")}</div>
+              <div><strong>Modo:</strong> ${esc(dObj.mode || "—")}</div>
+              ${dObj.mode === "masked" ? '<div style="color:var(--accent-red);">🔐 Valor registrado (mascarado)</div>' : ''}
+              ${dObj.mode === "partial" && dObj.valueFragment ? `<div><strong>Fragmento:</strong> ${esc(dObj.valueFragment)}</div>` : ''}
+              ${dObj.showInReport ? '<div style="color:var(--accent-green); font-size: 0.8rem; margin-top: 4px;">📂 Configurado para exibição no relatório</div>' : ''}
+              ${dObj.nonSecretNotes ? `<div><strong>Notas:</strong> ${esc(dObj.nonSecretNotes)}</div>` : ''}
+            </div>`;
+        } catch (_) {
+          detailHtml = `<div class="timeline-detail">${esc(e.detail)}</div>`;
+        }
+      } else if (e.type === "TRANSACAO_APREENSAO") {
+        try {
+          const txObj = JSON.parse(e.detail);
+          detailHtml = `
+            <div class="timeline-detail" style="border-left-color:var(--accent-blue);">
+              ${txObj.walletDest ? `<div><strong>Carteira destino (institucional):</strong> <span style="font-family:var(--font-mono);font-size:0.82rem;">${esc(txObj.walletDest)}</span></div>` : ''}
+              ${txObj.walletOrigin ? `<div><strong>Carteira origem:</strong> <span style="font-family:var(--font-mono);font-size:0.82rem;">${esc(txObj.walletOrigin)}</span></div>` : ''}
+              ${txObj.amount ? `<div><strong>Valor enviado:</strong> <span style="font-family:var(--font-mono);">${esc(txObj.amount)}</span></div>` : ''}
+              ${txObj.fee ? `<div><strong>Taxa paga:</strong> <span style="font-family:var(--font-mono);">${esc(txObj.fee)}</span></div>` : ''}
+              ${txObj.txHash ? `<div><strong>Hash TX:</strong> <span class="timeline-hash" style="font-size:0.78rem;" onclick="copyToClipboard('${esc(txObj.txHash)}')"> ${esc(txObj.txHash)}</span></div>` : ''}
+              ${txObj.explorerUrl ? `<div><strong>Explorador:</strong> <a href="${esc(txObj.explorerUrl)}" target="_blank" rel="noopener" style="color:var(--accent-amber);word-break:break-all;">${esc(txObj.explorerUrl)}</a></div>` : ''}
+            </div>`;
+        } catch (_) {
+          detailHtml = `<div class="timeline-detail">${esc(e.detail)}</div>`;
+        }
+      } else if (e.type === "RECUPERACAO_CARTEIRA") {
+        try {
+          const recObj = JSON.parse(e.detail);
+          detailHtml = `
+            <div class="timeline-detail" style="border-left-color:var(--accent-green);">
+              <div><strong>Procedimento:</strong> ${esc(recObj.procedureDescription || '')}</div>
+              ${recObj.brand ? `<div><strong>Marca:</strong> ${esc(recObj.brand)}</div>` : ''}
+              ${recObj.model ? `<div><strong>Modelo:</strong> ${esc(recObj.model)}</div>` : ''}
+              ${recObj.software ? `<div><strong>Software/App:</strong> ${esc(recObj.software)}</div>` : ''}
+              ${recObj.imageDataUrl ? `<div style="margin-top:8px;"><img src="${recObj.imageDataUrl}" style="max-width:100%;max-height:200px;border-radius:var(--radius-sm);border:1px solid var(--border-primary);cursor:pointer;" onclick="event.stopPropagation();document.getElementById('imgPreviewImg').src='${recObj.imageDataUrl}';document.getElementById('imgPreviewOverlay').classList.add('active');" alt="Imagem do processo"></div>` : ''}
+              ${recObj.notes ? `<div><strong>Notas:</strong> ${esc(recObj.notes)}</div>` : ''}
+            </div>`;
+        } catch (_) {
+          detailHtml = `<div class="timeline-detail">${esc(e.detail)}</div>`;
+        }
+      } else if (e.type === "ENTREGA") {
+        try {
+          const delObj = JSON.parse(e.detail);
+          let signaturesHtml = "";
+          if (delObj.signatureDelivered) {
+            const keyHash = delObj.signatureDelivered.keyHash || "—";
+            const dataDelivered = JSON.stringify({
+              caseId: e.caseId,
+              type: "ENTREGA",
+              object: delObj.object,
+              contentInfo: delObj.contentInfo,
+              fileHashes: delObj.fileHashes,
+              deliveredBy: delObj.deliveredBy,
+              receivedBy: delObj.receivedBy,
+              role: "deliveredBy"
+            });
+            const verified = await verifyDigitalSignature(dataDelivered, delObj.signatureDelivered.signatureHex, delObj.signatureDelivered.publicKeyJwk);
+            if (verified) {
+              signaturesHtml += `<div class="timeline-badge verified" style="display:inline-flex;align-items:center;gap:4px;color:var(--accent-green);font-size:0.8rem;margin-top:6px;background:rgba(16,185,129,0.1);padding:4px 8px;border-radius:4px;"><span style="font-size:0.85rem;">🔒</span> Assinatura digital válida (Entregador ID: <span style="font-family:var(--font-mono);font-size:0.75rem;">${esc(keyHash.substring(0,8))}...</span>)</div><br>`;
+            } else {
+              signaturesHtml += `<div class="timeline-badge invalid" style="display:inline-flex;align-items:center;gap:4px;color:var(--accent-red);font-size:0.8rem;margin-top:6px;background:rgba(239,68,68,0.1);padding:4px 8px;border-radius:4px;"><span style="font-size:0.85rem;">⚠️</span> Assinatura digital INVÁLIDA (Entregador)</div><br>`;
+            }
+          }
+          if (delObj.signatureReceived) {
+            const keyHash = delObj.signatureReceived.keyHash || "—";
+            const dataReceived = JSON.stringify({
+              caseId: e.caseId,
+              type: "ENTREGA",
+              object: delObj.object,
+              contentInfo: delObj.contentInfo,
+              fileHashes: delObj.fileHashes,
+              deliveredBy: delObj.deliveredBy,
+              receivedBy: delObj.receivedBy,
+              role: "receivedBy"
+            });
+            const verified = await verifyDigitalSignature(dataReceived, delObj.signatureReceived.signatureHex, delObj.signatureReceived.publicKeyJwk);
+            if (verified) {
+              signaturesHtml += `<div class="timeline-badge verified" style="display:inline-flex;align-items:center;gap:4px;color:var(--accent-green);font-size:0.8rem;margin-top:6px;background:rgba(16,185,129,0.1);padding:4px 8px;border-radius:4px;"><span style="font-size:0.85rem;">🔒</span> Assinatura digital válida (Recebedor ID: <span style="font-family:var(--font-mono);font-size:0.75rem;">${esc(keyHash.substring(0,8))}...</span>)</div><br>`;
+            } else {
+              signaturesHtml += `<div class="timeline-badge invalid" style="display:inline-flex;align-items:center;gap:4px;color:var(--accent-red);font-size:0.8rem;margin-top:6px;background:rgba(239,68,68,0.1);padding:4px 8px;border-radius:4px;"><span style="font-size:0.85rem;">⚠️</span> Assinatura digital INVÁLIDA (Recebedor)</div><br>`;
+            }
+          }
+
+          detailHtml = `
+            <div class="timeline-detail" style="border-left-color:var(--accent-amber-dim);">
+              <div><strong>Objeto:</strong> ${esc(delObj.object || '')}</div>
+              ${delObj.contentInfo ? `<div><strong>Conteúdo e Informações:</strong> ${esc(delObj.contentInfo)}</div>` : ''}
+              <div><strong>Entregue por:</strong> ${esc(delObj.deliveredBy || '')}</div>
+              <div><strong>Recebido por:</strong> ${esc(delObj.receivedBy || '')}</div>
+              ${delObj.fileHashes ? `<div style="margin-top:4px;"><strong>Hashes dos arquivos:</strong><pre style="font-family:var(--font-mono);font-size:0.78rem;background:var(--bg-input);padding:6px;border-radius:var(--radius-sm);margin:4px 0 0 0;white-space:pre-wrap;word-break:break-all;">${esc(delObj.fileHashes)}</pre></div>` : ''}
+              ${delObj.imageDataUrl ? `<div style="margin-top:8px;"><img src="${delObj.imageDataUrl}" style="max-width:100%;max-height:200px;border-radius:var(--radius-sm);border:1px solid var(--border-primary);cursor:pointer;" onclick="event.stopPropagation();document.getElementById('imgPreviewImg').src='${delObj.imageDataUrl}';document.getElementById('imgPreviewOverlay').classList.add('active');" alt="Imagem da entrega"></div>` : ''}
+              ${signaturesHtml}
+              ${delObj.notes ? `<div><strong>Notas:</strong> ${esc(delObj.notes)}</div>` : ''}
+            </div>`;
+        } catch (_) {
+          detailHtml = `<div class="timeline-detail">${esc(e.detail)}</div>`;
+        }
+      } else if (e.type === "LOCALIZACAO_OBJETO") {
+        try {
+          const locObj = JSON.parse(e.detail);
+          const locTypeMap = {
+            "dispositivo": "Dispositivo",
+            "anotacao": "Anotação",
+            "arquivo": "Arquivo",
+            "arma_fogo": "Arma de fogo",
+            "outro": "Outro"
+          };
+          const typeLabelLoc = locTypeMap[locObj.objectType] || locObj.objectType || '—';
+          detailHtml = `
+            <div class="timeline-detail" style="border-left-color:var(--accent-blue);">
+              <div><strong>Tipo de Objeto:</strong> ${esc(typeLabelLoc)}</div>
+              <div><strong>Descrição do Objeto:</strong> ${esc(locObj.description || '')}</div>
+              <div><strong>Localização quando encontrado:</strong> ${esc(locObj.locationFound || '')}</div>
+              ${locObj.imageDataUrl ? `<div style="margin-top:8px;"><img src="${locObj.imageDataUrl}" style="max-width:100%;max-height:200px;border-radius:var(--radius-sm);border:1px solid var(--border-primary);cursor:pointer;" onclick="event.stopPropagation();document.getElementById('imgPreviewImg').src='${locObj.imageDataUrl}';document.getElementById('imgPreviewOverlay').classList.add('active');" alt="Imagem do objeto"></div>` : ''}
+              ${locObj.notes ? `<div><strong>Notas:</strong> ${esc(locObj.notes)}</div>` : ''}
+            </div>`;
+        } catch (_) {
+          detailHtml = `<div class="timeline-detail">${esc(e.detail)}</div>`;
+        }
+      } else if (e.type === "ASSINATURA_RELATORIO") {
+        try {
+          const sigObj = JSON.parse(e.detail);
+          let signatureHtml = "";
+          if (sigObj.signature) {
+            const keyHash = sigObj.signature.keyHash || "—";
+            const dataSignatory = JSON.stringify({
+              caseId: e.caseId,
+              type: "ASSINATURA_RELATORIO",
+              signatureName: sigObj.signatureName,
+              signatureRole: sigObj.signatureRole
+            });
+            const verified = await verifyDigitalSignature(dataSignatory, sigObj.signature.signatureHex, sigObj.signature.publicKeyJwk);
+            if (verified) {
+              signatureHtml = `<div class="timeline-badge verified" style="display:inline-flex;align-items:center;gap:4px;color:var(--accent-green);font-size:0.8rem;margin-top:6px;background:rgba(16,185,129,0.1);padding:4px 8px;border-radius:4px;"><span style="font-size:0.85rem;">🔒</span> Assinatura digital válida (Signatário ID: <span style="font-family:var(--font-mono);font-size:0.75rem;">${esc(keyHash.substring(0,8))}...</span>)</div>`;
+            } else {
+              signatureHtml = `<div class="timeline-badge invalid" style="display:inline-flex;align-items:center;gap:4px;color:var(--accent-red);font-size:0.8rem;margin-top:6px;background:rgba(239,68,68,0.1);padding:4px 8px;border-radius:4px;"><span style="font-size:0.85rem;">⚠️</span> Assinatura digital INVÁLIDA</div>`;
+            }
+          }
+          detailHtml = `
+            <div class="timeline-detail" style="border-left-color:var(--accent-green);">
+              <div><strong>Nome:</strong> ${esc(sigObj.signatureName || '')}</div>
+              <div><strong>Cargo:</strong> ${esc(sigObj.signatureRole || '')}</div>
+              ${signatureHtml}
+              ${sigObj.notes ? `<div><strong>Notas:</strong> ${esc(sigObj.notes)}</div>` : ''}
+            </div>`;
+        } catch (_) {
+          detailHtml = `<div class="timeline-detail">${esc(e.detail)}</div>`;
+        }
+      } else {
+        try {
+          const parsed = JSON.parse(e.detail);
+          if (parsed.attachmentId) {
+            detailHtml = `<div class="timeline-detail">Anexo ID: ${esc(parsed.attachmentId)}<br>Hash: <span class="timeline-hash">${esc((parsed.fileHash || "").substring(0, 16))}…</span></div>`;
+          } else {
+            detailHtml = `<div class="timeline-detail">${esc(e.detail)}</div>`;
+          }
+        } catch (_) {
+          detailHtml = `<div class="timeline-detail">${esc(e.detail)}</div>`;
+        }
+      }
+    }
+
+    const typeLabel = eventTypeLabel(e.type);
+
+    html += `
+      <div class="timeline-item type-${e.type}">
+        <div class="timeline-type">${typeLabel}</div>
+        <div class="timeline-summary">${esc(e.summary)}</div>
+        ${detailHtml}
+        <div class="timeline-meta">
+          <span>${formatDateTime(e.createdAt)}</span>
+          <span class="timeline-hash" title="${esc(e.hash)}" onclick="copyToClipboard('${esc(e.hash)}')">#${hashShort}…</span>
+        </div>
+      </div>`;
+  }
+  container.innerHTML = html;
+}
+
+function eventTypeLabel(type) {
+  const map = {
+    "CASO_CRIADO": "📋 Caso criado",
+    "NOTA": "📝 Nota",
+    "ANEXO_IMAGEM": "📷 Anexo de imagem",
+    "SEED_REGISTRADA": "🔐 Seed / Chave",
+    "TRANSACAO_APREENSAO": "🔗 Transação de apreensão",
+    "RECUPERACAO_CARTEIRA": "🔄 Recuperação de carteira",
+    "ENTREGA": "📦 Entrega / Repasse",
+    "LOCALIZACAO_OBJETO": "🔍 Localização de Objeto",
+    "ASSINATURA_RELATORIO": "✍️ Assinatura do Relatório",
+    "OUTRO": "📌 Outro"
+  };
+  return map[type] || type;
+}
+
+/* ========================================
+   NOVO EVENTO
+   ======================================== */
+
+function openNewEventModal() {
+  document.getElementById("neType").value = "NOTA";
+  document.getElementById("neSummary").value = "";
+  document.getElementById("neDetail").value = "";
+  document.getElementById("neSensitiveType").value = "seed";
+  document.getElementById("neMode").value = "existence_only";
+  document.getElementById("neSeedValue").value = "";
+  document.getElementById("neSeedNotes").value = "";
+  document.getElementById("neSeedShowInReport").checked = false;
+  // Reset transaction fields
+  document.getElementById("neTxWalletDest").value = "";
+  document.getElementById("neTxWalletOrigin").value = "";
+  document.getElementById("neTxAmount").value = "";
+  document.getElementById("neTxFee").value = "";
+  document.getElementById("neTxHash").value = "";
+  document.getElementById("neTxExplorerUrl").value = "";
+  // Reset recovery fields
+  document.getElementById("neRecoveryDesc").value = "";
+  document.getElementById("neRecoveryBrand").value = "";
+  document.getElementById("neRecoveryModel").value = "";
+  document.getElementById("neRecoverySoftware").value = "";
+  document.getElementById("recoveryImgPreviewContainer").innerHTML = "";
+  window._recoveryImageDataUrl = null;
+  // Reset delivery fields
+  document.getElementById("neDeliveryObject").value = "";
+  document.getElementById("neDeliveryContent").value = "";
+  document.getElementById("neDeliveryFileHashes").value = "";
+  document.getElementById("neDeliveryBy").value = "";
+  document.getElementById("neDeliveryTo").value = "";
+  document.getElementById("neDeliveryByPassphrase").value = "";
+  document.getElementById("neDeliveryToPassphrase").value = "";
+  document.getElementById("deliveryImgPreviewContainer").innerHTML = "";
+  window._deliveryImageDataUrl = null;
+  // Reset location fields
+  document.getElementById("neLocationObjectType").value = "dispositivo";
+  document.getElementById("neLocationDescription").value = "";
+  document.getElementById("neLocationWhereFound").value = "";
+  document.getElementById("locationImgPreviewContainer").innerHTML = "";
+  window._locationImageDataUrl = null;
+  // Reset signature fields
+  document.getElementById("neSignatureName").value = "";
+  document.getElementById("neSignatureRole").value = "";
+  document.getElementById("neSignaturePassphrase").value = "";
+  toggleSeedFields();
+  openModal("modalNewEvent");
+}
+
+function toggleSeedFields() {
+  const type = document.getElementById("neType").value;
+  const seedFields = document.getElementById("seedFields");
+  const txFields = document.getElementById("txFields");
+  const recoveryFields = document.getElementById("recoveryFields");
+  const deliveryFields = document.getElementById("deliveryFields");
+  const locationFields = document.getElementById("locationFields");
+  const signatureFields = document.getElementById("signatureFields");
+
+  seedFields.classList.remove("active");
+  txFields.classList.remove("active");
+  recoveryFields.classList.remove("active");
+  deliveryFields.classList.remove("active");
+  locationFields.classList.remove("active");
+  signatureFields.classList.remove("active");
+
+  if (type === "SEED_REGISTRADA") {
+    seedFields.classList.add("active");
+  } else if (type === "TRANSACAO_APREENSAO") {
+    txFields.classList.add("active");
+  } else if (type === "RECUPERACAO_CARTEIRA") {
+    recoveryFields.classList.add("active");
+  } else if (type === "ENTREGA") {
+    deliveryFields.classList.add("active");
+  } else if (type === "LOCALIZACAO_OBJETO") {
+    locationFields.classList.add("active");
+  } else if (type === "ASSINATURA_RELATORIO") {
+    signatureFields.classList.add("active");
+  }
+  toggleSeedValueField();
+}
+
+function toggleSeedValueField() {
+  const mode = document.getElementById("neMode").value;
+  const group = document.getElementById("seedValueGroup");
+  const reportGroup = document.getElementById("seedReportGroup");
+  if (mode === "partial" || mode === "masked") {
+    group.style.display = "block";
+    if (reportGroup) reportGroup.style.display = "block";
+  } else {
+    group.style.display = "none";
+    if (reportGroup) reportGroup.style.display = "none";
+  }
+}
+
+async function handleCreateEvent() {
+  const type = document.getElementById("neType").value;
+  const summary = document.getElementById("neSummary").value.trim();
+  if (!summary) {
+    showToast("Preencha o resumo do evento.", "error");
+    return;
+  }
+
+  let detail = document.getElementById("neDetail").value.trim() || null;
+
+  if (type === "SEED_REGISTRADA") {
+    const sensitiveType = document.getElementById("neSensitiveType").value;
+    const mode = document.getElementById("neMode").value;
+    const seedValue = document.getElementById("neSeedValue").value.trim();
+    const seedNotes = document.getElementById("neSeedNotes").value.trim();
+    const showInReport = document.getElementById("neSeedShowInReport").checked;
+
+    const seedDetail = {
+      sensitiveType,
+      mode,
+      nonSecretNotes: seedNotes || null,
+      showInReport: showInReport
+    };
+
+    if (mode === "partial") {
+      seedDetail.valueFragment = seedValue || null;
+    } else if (mode === "masked") {
+      seedDetail.valueFragment = seedValue || null;
+    }
+    // existence_only: no value stored
+
+    detail = JSON.stringify(seedDetail);
+  }
+
+  if (type === "TRANSACAO_APREENSAO") {
+    const txDetail = {
+      walletDest: document.getElementById("neTxWalletDest").value.trim() || null,
+      walletOrigin: document.getElementById("neTxWalletOrigin").value.trim() || null,
+      amount: document.getElementById("neTxAmount").value.trim() || null,
+      fee: document.getElementById("neTxFee").value.trim() || null,
+      txHash: document.getElementById("neTxHash").value.trim() || null,
+      explorerUrl: document.getElementById("neTxExplorerUrl").value.trim() || null,
+      notes: detail
+    };
+    detail = JSON.stringify(txDetail);
+  }
+
+  if (type === "RECUPERACAO_CARTEIRA") {
+    const recDesc = document.getElementById("neRecoveryDesc").value.trim();
+    if (!recDesc) {
+      showToast("Preencha a descrição do procedimento de recuperação.", "error");
+      return;
+    }
+    const recDetail = {
+      procedureDescription: recDesc,
+      brand: document.getElementById("neRecoveryBrand").value.trim() || null,
+      model: document.getElementById("neRecoveryModel").value.trim() || null,
+      software: document.getElementById("neRecoverySoftware").value.trim() || null,
+      imageDataUrl: window._recoveryImageDataUrl || null,
+      notes: detail
+    };
+    detail = JSON.stringify(recDetail);
+  }
+
+  if (type === "ENTREGA") {
+    const deliveryObject = document.getElementById("neDeliveryObject").value.trim();
+    const deliveryBy = document.getElementById("neDeliveryBy").value.trim();
+    const deliveryTo = document.getElementById("neDeliveryTo").value.trim();
+
+    if (!deliveryObject) {
+      showToast("Preencha o campo Objeto.", "error");
+      return;
+    }
+    if (!deliveryBy) {
+      showToast("Preencha o campo Entregue por.", "error");
+      return;
+    }
+    if (!deliveryTo) {
+      showToast("Preencha o campo Recebido por.", "error");
+      return;
+    }
+
+    const delDetail = {
+      object: deliveryObject,
+      contentInfo: document.getElementById("neDeliveryContent").value.trim() || null,
+      fileHashes: document.getElementById("neDeliveryFileHashes").value.trim() || null,
+      deliveredBy: deliveryBy,
+      receivedBy: deliveryTo,
+      imageDataUrl: window._deliveryImageDataUrl || null,
+      notes: detail
+    };
+
+    const byPassphrase = document.getElementById("neDeliveryByPassphrase").value;
+    const toPassphrase = document.getElementById("neDeliveryToPassphrase").value;
+
+    if (byPassphrase) {
+      const dataToSign = JSON.stringify({
+        caseId: currentCaseId,
+        type: "ENTREGA",
+        object: delDetail.object,
+        contentInfo: delDetail.contentInfo,
+        fileHashes: delDetail.fileHashes,
+        deliveredBy: delDetail.deliveredBy,
+        receivedBy: delDetail.receivedBy,
+        role: "deliveredBy"
+      });
+      showToast("Gerando assinatura digital (Entregador)...", "info");
+      try {
+        const signaturePayload = await generateDigitalSignature(byPassphrase, dataToSign);
+        signaturePayload.keyHash = await getPublicKeyHash(signaturePayload.publicKeyJwk);
+        delDetail.signatureDelivered = signaturePayload;
+      } catch (e) {
+        console.error("Erro na assinatura do entregador:", e);
+        showToast("Erro ao gerar assinatura digital do entregador.", "error");
+        return;
+      }
+    }
+
+    if (toPassphrase) {
+      const dataToSign = JSON.stringify({
+        caseId: currentCaseId,
+        type: "ENTREGA",
+        object: delDetail.object,
+        contentInfo: delDetail.contentInfo,
+        fileHashes: delDetail.fileHashes,
+        deliveredBy: delDetail.deliveredBy,
+        receivedBy: delDetail.receivedBy,
+        role: "receivedBy"
+      });
+      showToast("Gerando assinatura digital (Recebedor)...", "info");
+      try {
+        const signaturePayload = await generateDigitalSignature(toPassphrase, dataToSign);
+        signaturePayload.keyHash = await getPublicKeyHash(signaturePayload.publicKeyJwk);
+        delDetail.signatureReceived = signaturePayload;
+      } catch (e) {
+        console.error("Erro na assinatura do recebedor:", e);
+        showToast("Erro ao gerar assinatura digital do recebedor.", "error");
+        return;
+      }
+    }
+
+    detail = JSON.stringify(delDetail);
+  }
+
+  if (type === "LOCALIZACAO_OBJETO") {
+    const objectType = document.getElementById("neLocationObjectType").value;
+    const description = document.getElementById("neLocationDescription").value.trim();
+    const locationFound = document.getElementById("neLocationWhereFound").value.trim();
+
+    if (!description) {
+      showToast("Preencha o campo Descrição do objeto.", "error");
+      return;
+    }
+    if (!locationFound) {
+      showToast("Preencha o campo Localização quando encontrado.", "error");
+      return;
+    }
+
+    const locDetail = {
+      objectType,
+      description,
+      locationFound,
+      imageDataUrl: window._locationImageDataUrl || null,
+      notes: detail
+    };
+    detail = JSON.stringify(locDetail);
+  }
+
+  if (type === "ASSINATURA_RELATORIO") {
+    const signatureName = document.getElementById("neSignatureName").value.trim();
+    const signatureRole = document.getElementById("neSignatureRole").value.trim();
+
+    if (!signatureName) {
+      showToast("Preencha o campo Nome.", "error");
+      return;
+    }
+    if (!signatureRole) {
+      showToast("Selecione o Cargo.", "error");
+      return;
+    }
+
+    const sigDetail = {
+      signatureName,
+      signatureRole,
+      notes: detail
+    };
+
+    const passphrase = document.getElementById("neSignaturePassphrase").value;
+    if (passphrase) {
+      const dataToSign = JSON.stringify({
+        caseId: currentCaseId,
+        type: "ASSINATURA_RELATORIO",
+        signatureName: signatureName,
+        signatureRole: signatureRole
+      });
+      showToast("Gerando assinatura digital...", "info");
+      try {
+        const signaturePayload = await generateDigitalSignature(passphrase, dataToSign);
+        signaturePayload.keyHash = await getPublicKeyHash(signaturePayload.publicKeyJwk);
+        sigDetail.signature = signaturePayload;
+      } catch (e) {
+        console.error("Erro na assinatura do signatário:", e);
+        showToast("Erro ao gerar assinatura digital do signatário.", "error");
+        return;
+      }
+    }
+
+    detail = JSON.stringify(sigDetail);
+  }
+
+  const evt = await createCustodyEvent(currentCaseId, type, summary, detail);
+
+  if (!appState.eventsByCase[currentCaseId]) {
+    appState.eventsByCase[currentCaseId] = [];
+  }
+  appState.eventsByCase[currentCaseId].push(evt);
+  saveStateToStorage();
+
+  closeModal("modalNewEvent");
+  await renderTimeline(currentCaseId);
+  showToast("Evento registrado!", "success");
+}
+
+/* ========================================
+   INTEGRIDADE
+   ======================================== */
+
+async function verifyAndShowIntegrity() {
+  const result = await verifyChainIntegrity(currentCaseId);
+  const banner = document.getElementById("integrityBanner");
+  banner.style.display = "flex";
+
+  if (result.ok) {
+    const events = getEventsForCase(currentCaseId);
+    banner.className = "integrity-banner integrity-ok";
+    banner.innerHTML = `✅ Cadeia íntegra — ${events.length} evento${events.length !== 1 ? 's' : ''} verificado${events.length !== 1 ? 's' : ''}`;
+  } else {
+    banner.className = "integrity-banner integrity-broken";
+    banner.innerHTML = `❌ Cadeia rompida no evento #${result.brokenAtIndex + 1} (${esc(result.eventId)})`;
+  }
+}
+
+/* ========================================
+   ANEXOS (IMAGENS)
+   ======================================== */
+
+function getAttachmentsForCase(caseId) {
+  return appState.attachmentsByCase[caseId] || [];
+}
+
+function triggerFileInput() {
+  document.getElementById("fileInputHidden").click();
+}
+
+async function handleFileSelected(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  event.target.value = "";
+
+  if (!file.type.startsWith("image/")) {
+    showToast("Apenas imagens são suportadas.", "error");
+    return;
+  }
+
+  if (file.size > 10 * 1024 * 1024) {
+    showToast("Arquivo muito grande (máx. 10 MB).", "error");
+    return;
+  }
+
+  showToast("Processando imagem…", "info");
+
+  try {
+    const att = await addAttachmentToCase(currentCaseId, file, "upload");
+    renderAttachments(currentCaseId);
+    showToast("Imagem anexada!", "success");
+  } catch (e) {
+    console.error(e);
+    showToast("Erro ao anexar imagem.", "error");
+  }
+}
+
+function readFileAsDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
+async function addAttachmentToCase(caseId, file, originLabel) {
+  const id = "att-" + Date.now().toString() + "-" + Math.floor(Math.random() * 1000);
+  const now = new Date().toISOString();
+  const dataUrl = await readFileAsDataURL(file);
+  const fileHash = await computeSha256Hex(dataUrl);
+
+  const attachment = {
+    id,
+    caseId,
+    fileName: file.name,
+    mimeType: file.type,
+    sizeBytes: file.size,
+    createdAt: now,
+    origin: originLabel || "upload",
+    dataBase64: dataUrl,
+    fileHash
+  };
+
+  if (!appState.attachmentsByCase[caseId]) {
+    appState.attachmentsByCase[caseId] = [];
+  }
+  appState.attachmentsByCase[caseId].push(attachment);
+
+  const evt = await createCustodyEvent(caseId, "ANEXO_IMAGEM", "Imagem anexada: " + file.name, {
+    attachmentId: id,
+    fileHash: fileHash
+  });
+  if (!appState.eventsByCase[caseId]) {
+    appState.eventsByCase[caseId] = [];
+  }
+  appState.eventsByCase[caseId].push(evt);
+
+  saveStateToStorage();
+  return attachment;
+}
+
+function renderAttachments(caseId) {
+  const container = document.getElementById("attachmentsContainer");
+  const attachments = getAttachmentsForCase(caseId);
+
+  if (attachments.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📷</div>
+        <div class="empty-state-text">Nenhum anexo</div>
+        <button class="btn btn-primary btn-sm" onclick="triggerFileInput()">＋ Adicionar imagem</button>
+      </div>`;
+    return;
+  }
+
+  let html = "";
+  for (const att of attachments) {
+    const hashShort = att.fileHash.substring(0, 12);
+    const sizeStr = formatBytes(att.sizeBytes);
+    html += `
+      <div class="attachment-item" onclick="showImagePreview('${att.id}')">
+        <img class="attachment-thumb" src="${att.dataBase64}" alt="${esc(att.fileName)}" loading="lazy">
+        <div class="attachment-info">
+          <div class="attachment-name">${esc(att.fileName)}</div>
+          <div class="attachment-meta">
+            <span>${sizeStr}</span>
+            <span>${formatDateTime(att.createdAt)}</span>
+            <span title="${esc(att.fileHash)}" style="font-family:var(--font-mono);font-size:0.72rem;">#${hashShort}…</span>
+          </div>
+        </div>
+      </div>`;
+  }
+  container.innerHTML = html;
+}
+
+function showImagePreview(attId) {
+  const attachments = getAttachmentsForCase(currentCaseId);
+  const att = attachments.find(a => a.id === attId);
+  if (!att) return;
+  document.getElementById("imgPreviewImg").src = att.dataBase64;
+  document.getElementById("imgPreviewOverlay").classList.add("active");
+}
+
+function closeImagePreview() {
+  document.getElementById("imgPreviewOverlay").classList.remove("active");
+}
+
+/* ========================================
+   EXPORT
+   ======================================== */
+
+function renderExportSection(caseId) {
+  const container = document.getElementById("exportContainer");
+  const c = getCaseById(caseId);
+  if (!c) return;
+
+  const evts = getEventsForCase(caseId);
+  const atts = getAttachmentsForCase(caseId);
+
+  container.innerHTML = `
+    <div style="margin-bottom:20px;">
+      <h3 style="font-size:1rem;margin-bottom:8px;">Exportar dados do caso</h3>
+      <p style="font-size:0.84rem;color:var(--text-secondary);">Caso: <strong>${esc(c.caseNumber)}</strong> — ${evts.length} eventos, ${atts.length} anexos</p>
+    </div>
+
+    <div class="export-card">
+      <div class="export-icon export-json-icon">📋</div>
+      <div class="export-info">
+        <h4>Exportar JSON</h4>
+        <p>Arquivo completo com dados do caso, eventos e anexos (base64).</p>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="handleExportJson()">Exportar</button>
+    </div>
+
+    <div class="export-card">
+      <div class="export-icon export-pdf-icon">📄</div>
+      <div class="export-info">
+        <h4>Exportar relatório PDF</h4>
+        <p>Relatório consolidado com cabeçalho, linha do tempo e metadados dos anexos.</p>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="handleExportPdf()">Exportar</button>
+    </div>
+
+    <div style="margin-top:16px;padding:12px 16px;background:var(--bg-card);border:1px solid var(--border-primary);border-radius:var(--radius-sm);font-size:0.82rem;color:var(--text-muted);">
+      ℹ️ A exportação JSON inclui imagens em base64. A exportação PDF inclui imagens dos anexos, hashes completos (SHA-256) e dados de integridade.
+    </div>
+  `;
+}
+
+function exportCaseAsJson(caseId) {
+  const c = getCaseById(caseId);
+  if (!c) return null;
+  const events = getEventsForCase(caseId);
+  const attachments = getAttachmentsForCase(caseId);
+  const exportObj = {
+    version: "1.0",
+    application: "Fênix Audit Lite",
+    exportedAt: new Date().toISOString(),
+    case: c,
+    events,
+    attachments
+  };
+  return JSON.stringify(exportObj, null, 2);
+}
+
+function handleExportJson() {
+  const json = exportCaseAsJson(currentCaseId);
+  if (!json) return;
+  const c = getCaseById(currentCaseId);
+  const safeName = c.caseNumber.replace(/[^a-zA-Z0-9]/g, "_");
+  downloadFile(`fnix-audit-lite-${safeName}.json`, json, "application/json");
+  showToast("JSON exportado!", "success");
+}
+
+function downloadFile(filename, content, mimeType) {
+  let blob;
+  if (content instanceof Uint8Array || content instanceof ArrayBuffer) {
+    blob = new Blob([content], { type: mimeType });
+  } else {
+    blob = new Blob([content], { type: mimeType });
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// Utility: Convert a data URL image to JPEG bytes via canvas
+function dataUrlToJpegBytes(dataUrl, maxW, maxH) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      let w = img.width;
+      let h = img.height;
+      // Scale down if needed
+      if (w > maxW || h > maxH) {
+        const scale = Math.min(maxW / w, maxH / h);
+        w = Math.floor(w * scale);
+        h = Math.floor(h * scale);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, w, h);
+      ctx.drawImage(img, 0, 0, w, h);
+      const jpegDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      const base64 = jpegDataUrl.split(',')[1];
+      const binary = atob(base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      resolve({ bytes, width: w, height: h });
+    };
+    img.onerror = reject;
+    img.src = dataUrl;
+  });
+}
+
+// Utility for recovery image selection
+function handleRecoveryImageSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  event.target.value = '';
+  if (!file.type.startsWith('image/')) {
+    showToast('Apenas imagens s\u00e3o suportadas.', 'error');
+    return;
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    showToast('Arquivo muito grande (m\u00e1x. 10 MB).', 'error');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    window._recoveryImageDataUrl = e.target.result;
+    document.getElementById('recoveryImgPreviewContainer').innerHTML = `
+      <div class="recovery-img-preview-container">
+        <img src="${e.target.result}" class="recovery-img-preview" alt="Preview">
+        <button class="recovery-img-remove" onclick="removeRecoveryImage()" title="Remover">&times;</button>
+      </div>`;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeRecoveryImage() {
+  window._recoveryImageDataUrl = null;
+  document.getElementById('recoveryImgPreviewContainer').innerHTML = '';
+}
+
+// Utility for delivery image selection
+function handleDeliveryImageSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  event.target.value = '';
+  if (!file.type.startsWith('image/')) {
+    showToast('Apenas imagens são suportadas.', 'error');
+    return;
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    showToast('Arquivo muito grande (máx. 10 MB).', 'error');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    window._deliveryImageDataUrl = e.target.result;
+    document.getElementById('deliveryImgPreviewContainer').innerHTML = `
+      <div class="delivery-img-preview-container">
+        <img src="${e.target.result}" class="delivery-img-preview" alt="Preview">
+        <button class="delivery-img-remove" onclick="removeDeliveryImage()" title="Remover">&times;</button>
+      </div>`;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeDeliveryImage() {
+  window._deliveryImageDataUrl = null;
+  document.getElementById('deliveryImgPreviewContainer').innerHTML = '';
+}
+
+// Utility for location image selection
+function handleLocationImageSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  event.target.value = '';
+  if (!file.type.startsWith('image/')) {
+    showToast('Apenas imagens são suportadas.', 'error');
+    return;
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    showToast('Arquivo muito grande (máx. 10 MB).', 'error');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    window._locationImageDataUrl = e.target.result;
+    document.getElementById('locationImgPreviewContainer').innerHTML = `
+      <div class="location-img-preview-container">
+        <img src="${e.target.result}" class="location-img-preview" alt="Preview">
+        <button class="location-img-remove" onclick="removeLocationImage()" title="Remover">&times;</button>
+      </div>`;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeLocationImage() {
+  window._locationImageDataUrl = null;
+  document.getElementById('locationImgPreviewContainer').innerHTML = '';
+}
+
+/* ========================================
+   EXPORTAÇÃO PDF (GERADOR INLINE)
+   ======================================== */
+
+async function handleExportPdf() {
+  const c = getCaseById(currentCaseId);
+  if (!c) return;
+
+  const events = getEventsForCase(currentCaseId);
+  const attachments = getAttachmentsForCase(currentCaseId);
+
+  showToast("Gerando PDF com imagens...", "info");
+
+  try {
+    const pdfBytes = await generatePdf(c, events, attachments);
+    const safeName = c.caseNumber.replace(/[^a-zA-Z0-9]/g, "_");
+    downloadFile(`fnix-audit-lite-${safeName}.pdf`, pdfBytes, "application/pdf");
+    showToast("PDF exportado!", "success");
+  } catch (e) {
+    console.error("Erro ao gerar PDF:", e);
+    showToast("Erro ao gerar PDF.", "error");
+  }
+}
+
+/*
+ * Gerador de PDF inline – sem dependências externas.
+ * Produz um PDF 1.4 válido com texto (WinAnsiEncoding) e imagens JPEG embutidas.
+ * Hashes completos SHA-256 e imagens dos anexos.
+ */
+async function generatePdf(caseObj, events, attachments) {
+  const PAGE_W = 595.28;   // A4 pt
+  const PAGE_H = 841.89;
+  const MARGIN_L = 50;
+  const MARGIN_R = 50;
+  const MARGIN_T = 50;
+  const MARGIN_B = 60;
+  const LINE_HEIGHT = 14;
+  const MAX_TEXT_W = PAGE_W - MARGIN_L - MARGIN_R;
+  const IMG_MAX_W = MAX_TEXT_W;
+  const IMG_MAX_H = 300;
+
+  // Pre-process institution logo if available
+  let logoImgObj = null;
+  if (institutionConfig.logoDataUrl) {
+    try {
+      logoImgObj = await dataUrlToJpegBytes(institutionConfig.logoDataUrl, 100, 100);
+    } catch (e) {
+      console.warn('Could not convert institution logo for PDF:', e);
+    }
+  }
+
+  // Collect image objects to embed: { jpegBytes, width, height, objId }
+  const imageObjects = [];
+
+  // Pre-process all attachment images to JPEG
+  for (const att of attachments) {
+    if (att.dataBase64) {
+      try {
+        const imgData = await dataUrlToJpegBytes(att.dataBase64, 500, 400);
+        imageObjects.push({ ...imgData, attId: att.id, objId: null });
+      } catch (e) {
+        console.warn('Could not convert image for PDF:', att.fileName, e);
+      }
+    }
+  }
+
+  // Also collect recovery event images
+  const recoveryImages = [];
+  for (const e of events) {
+    if (e.type === 'RECUPERACAO_CARTEIRA' && e.detail) {
+      try {
+        const rd = JSON.parse(e.detail);
+        if (rd.imageDataUrl) {
+          const imgData = await dataUrlToJpegBytes(rd.imageDataUrl, 500, 400);
+          recoveryImages.push({ ...imgData, eventId: e.id, objId: null });
+        }
+      } catch (_) {}
+    }
+  }
+
+  // Also collect delivery event images
+  const deliveryImages = [];
+  for (const e of events) {
+    if (e.type === 'ENTREGA' && e.detail) {
+      try {
+        const dd = JSON.parse(e.detail);
+        if (dd.imageDataUrl) {
+          const imgData = await dataUrlToJpegBytes(dd.imageDataUrl, 500, 400);
+          deliveryImages.push({ ...imgData, eventId: e.id, objId: null });
+        }
+      } catch (_) {}
+    }
+  }
+
+  // Also collect location event images
+  const locationImages = [];
+  for (const e of events) {
+    if (e.type === 'LOCALIZACAO_OBJETO' && e.detail) {
+      try {
+        const ld = JSON.parse(e.detail);
+        if (ld.imageDataUrl) {
+          const imgData = await dataUrlToJpegBytes(ld.imageDataUrl, 500, 400);
+          locationImages.push({ ...imgData, eventId: e.id, objId: null });
+        }
+      } catch (_) {}
+    }
+  }
+
+  // PDF objects collector
+  const objects = [];
+  let nextObjId = 1;
+
+  function addObj(content) {
+    const id = nextObjId++;
+    objects.push({ id, content, binaryStream: null });
+    return id;
+  }
+
+  // Add a binary stream object (for JPEG images)
+  function addBinaryObj(headerDict, binaryData) {
+    const id = nextObjId++;
+    objects.push({ id, content: null, binaryStream: { header: headerDict, data: binaryData } });
+    return id;
+  }
+
+  // WinAnsiEncoding map
+  const WIN_ANSI_MAP = {
+    '\u00C0': 192, '\u00C1': 193, '\u00C2': 194, '\u00C3': 195, '\u00C4': 196,
+    '\u00C5': 197, '\u00C6': 198, '\u00C7': 199, '\u00C8': 200, '\u00C9': 201,
+    '\u00CA': 202, '\u00CB': 203, '\u00CC': 204, '\u00CD': 205, '\u00CE': 206,
+    '\u00CF': 207, '\u00D0': 208, '\u00D1': 209, '\u00D2': 210, '\u00D3': 211,
+    '\u00D4': 212, '\u00D5': 213, '\u00D6': 214, '\u00D7': 215, '\u00D8': 216,
+    '\u00D9': 217, '\u00DA': 218, '\u00DB': 219, '\u00DC': 220, '\u00DD': 221,
+    '\u00DE': 222, '\u00DF': 223, '\u00E0': 224, '\u00E1': 225, '\u00E2': 226,
+    '\u00E3': 227, '\u00E4': 228, '\u00E5': 229, '\u00E6': 230, '\u00E7': 231,
+    '\u00E8': 232, '\u00E9': 233, '\u00EA': 234, '\u00EB': 235, '\u00EC': 236,
+    '\u00ED': 237, '\u00EE': 238, '\u00EF': 239, '\u00F0': 240, '\u00F1': 241,
+    '\u00F2': 242, '\u00F3': 243, '\u00F4': 244, '\u00F5': 245, '\u00F6': 246,
+    '\u00F7': 247, '\u00F8': 248, '\u00F9': 249, '\u00FA': 250, '\u00FB': 251,
+    '\u00FC': 252, '\u00FD': 253, '\u00FE': 254, '\u00FF': 255,
+    '\u2013': 150, '\u2014': 151, '\u2018': 145, '\u2019': 146,
+    '\u201C': 147, '\u201D': 148, '\u2022': 149, '\u2026': 133,
+    '\u20AC': 128, '\u0152': 140, '\u0153': 156, '\u0160': 138,
+    '\u0161': 154, '\u0178': 159, '\u017D': 142, '\u017E': 158,
+    '\u0192': 131, '\u02C6': 136, '\u02DC': 152, '\u2020': 134,
+    '\u2021': 135, '\u2030': 137, '\u2039': 139, '\u203A': 155,
+    '\u2122': 153,
+  };
+
+  function toWinAnsiHex(str) {
+    let hex = '';
+    for (let i = 0; i < str.length; i++) {
+      const ch = str[i];
+      const code = ch.charCodeAt(0);
+      let byteVal;
+      if (code < 128) { byteVal = code; }
+      else if (WIN_ANSI_MAP[ch] !== undefined) { byteVal = WIN_ANSI_MAP[ch]; }
+      else { byteVal = 63; }
+      hex += byteVal.toString(16).padStart(2, '0');
+    }
+    return '<' + hex + '>';
+  }
+
+  function textWidth(str, fontSize) {
+    return str.length * 0.52 * fontSize;
+  }
+
+  function wrapText(text, fontSize, maxWidth) {
+    const lines = [];
+    const paragraphs = text.split("\n");
+    for (const para of paragraphs) {
+      if (para.trim() === "") { lines.push(""); continue; }
+      const words = para.split(/\s+/);
+      let line = "";
+      for (const word of words) {
+        const test = line ? line + " " + word : word;
+        if (textWidth(test, fontSize) > maxWidth && line) {
+          lines.push(line);
+          line = word;
+        } else {
+          line = test;
+        }
+      }
+      if (line) lines.push(line);
+    }
+    return lines;
+  }
+
+  // Page drawing commands & image references per page
+  const pages = [];
+  let currentPage = [];
+  let currentPageImages = []; // { imgName, imgObjId, x, y, w, h }
+  let curY = PAGE_H - MARGIN_T;
+
+  function ensureSpace(needed) {
+    if (curY - needed < MARGIN_B) {
+      pages.push({ commands: currentPage, images: currentPageImages });
+      currentPage = [];
+      currentPageImages = [];
+      curY = PAGE_H - MARGIN_T;
+    }
+  }
+
+  function addText(text, fontSize, fontStyle, color) {
+    let fontName = "/F1";
+    if (fontStyle === true || fontStyle === "bold") fontName = "/F2";
+    else if (fontStyle === "mono") fontName = "/F3";
+    const r = color ? color[0] : 0.1;
+    const g = color ? color[1] : 0.1;
+    const b = color ? color[2] : 0.14;
+    const wrappedLines = wrapText(text, fontSize, MAX_TEXT_W);
+    for (const line of wrappedLines) {
+      ensureSpace(LINE_HEIGHT);
+      const hexStr = toWinAnsiHex(line);
+      currentPage.push(`BT ${fontName} ${fontSize} Tf ${r} ${g} ${b} rg ${MARGIN_L} ${curY.toFixed(2)} Td ${hexStr} Tj ET`);
+      curY -= LINE_HEIGHT;
+    }
+  }
+
+  function drawText(text, x, y, fontSize, fontStyle, color, maxW) {
+    let fontName = "/F1";
+    if (fontStyle === true || fontStyle === "bold") fontName = "/F2";
+    else if (fontStyle === "mono") fontName = "/F3";
+    const r = color ? color[0] : 0.1;
+    const g = color ? color[1] : 0.1;
+    const b = color ? color[2] : 0.14;
+    const limit = maxW || (PAGE_W - x - MARGIN_R);
+    const wrappedLines = wrapText(text, fontSize, limit);
+    let currentY = y;
+    for (const line of wrappedLines) {
+      const hexStr = toWinAnsiHex(line);
+      currentPage.push(`BT ${fontName} ${fontSize} Tf ${r} ${g} ${b} rg ${x.toFixed(2)} ${currentY.toFixed(2)} Td ${hexStr} Tj ET`);
+      currentY -= (fontSize + 4);
+    }
+    return currentY;
+  }
+
+  // Place an image on the current page (imgObj has objId, width, height in pixels)
+  function addImage(imgObj, imgName) {
+    // Scale to fit within content area
+    let w = imgObj.width;
+    let h = imgObj.height;
+    const scale = Math.min(IMG_MAX_W / w, IMG_MAX_H / h, 1);
+    w = Math.floor(w * scale);
+    h = Math.floor(h * scale);
+    ensureSpace(h + 10);
+    const imgY = curY - h;
+    // q ... cm ... Do Q  to place image
+    currentPage.push(`q ${w} 0 0 ${h} ${MARGIN_L} ${imgY.toFixed(2)} cm /${imgName} Do Q`);
+    currentPageImages.push({ imgName, imgObjId: imgObj.objId });
+    curY = imgY - 6;
+  }
+
+  function addLine() {
+    ensureSpace(10);
+    currentPage.push(`${MARGIN_L} ${curY.toFixed(2)} m ${PAGE_W - MARGIN_R} ${curY.toFixed(2)} l 0.7 0.7 0.75 RG 0.5 w S`);
+    curY -= 10;
+  }
+
+  function addSpacer(h) { curY -= h; }
+
+  // Create image XObjects and assign objIds
+  for (let i = 0; i < imageObjects.length; i++) {
+    const img = imageObjects[i];
+    const header = `<< /Type /XObject /Subtype /Image /Width ${img.width} /Height ${img.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${img.bytes.length} >>`;
+    img.objId = addBinaryObj(header, img.bytes);
+  }
+  for (let i = 0; i < recoveryImages.length; i++) {
+    const img = recoveryImages[i];
+    const header = `<< /Type /XObject /Subtype /Image /Width ${img.width} /Height ${img.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${img.bytes.length} >>`;
+    img.objId = addBinaryObj(header, img.bytes);
+  }
+  for (let i = 0; i < deliveryImages.length; i++) {
+    const img = deliveryImages[i];
+    const header = `<< /Type /XObject /Subtype /Image /Width ${img.width} /Height ${img.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${img.bytes.length} >>`;
+    img.objId = addBinaryObj(header, img.bytes);
+  }
+  for (let i = 0; i < locationImages.length; i++) {
+    const img = locationImages[i];
+    const header = `<< /Type /XObject /Subtype /Image /Width ${img.width} /Height ${img.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${img.bytes.length} >>`;
+    img.objId = addBinaryObj(header, img.bytes);
+  }
+  if (logoImgObj) {
+    const header = `<< /Type /XObject /Subtype /Image /Width ${logoImgObj.width} /Height ${logoImgObj.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${logoImgObj.bytes.length} >>`;
+    logoImgObj.objId = addBinaryObj(header, logoImgObj.bytes);
+  }
+
+  // ——— Build the PDF content ———
+
+  const headerStart = curY;
+  let textX = MARGIN_L;
+  let logoH = 0;
+
+  if (logoImgObj) {
+    let w = logoImgObj.width;
+    let h = logoImgObj.height;
+    const scale = Math.min(55 / w, 55 / h, 1);
+    w = Math.floor(w * scale);
+    h = Math.floor(h * scale);
+    logoH = h;
+    ensureSpace(h + 10);
+    const imgY = curY - h;
+    currentPage.push(`q ${w} 0 0 ${h} ${MARGIN_L} ${imgY.toFixed(2)} cm /InstitutionLogo Do Q`);
+    textX = MARGIN_L + w + 15;
+  }
+
+  let textY = headerStart - 5;
+  const darkGray = [0.15, 0.15, 0.2];
+  const midGray = [0.4, 0.45, 0.5];
+  const primaryAccent = [0.2, 0.25, 0.3];
+
+  if (institutionConfig.name) {
+    textY = drawText(institutionConfig.name.toUpperCase(), textX, textY, 9, "bold", midGray) - 4;
+  } else {
+    textY = drawText("PROTOCOLO DE SEGURANÇA E AUDITORIA FORENSE", textX, textY, 8, "bold", midGray) - 4;
+  }
+
+  textY = drawText("FENIX AUDIT LITE", textX, textY, 18, "bold", primaryAccent) - 4;
+  textY = drawText("Relatório de Integridade e Custódia de Evidências", textX, textY, 11, false, darkGray) - 4;
+  textY = drawText("Algoritmo de Integridade: SHA-256 | Cadeia de Custódia Local", textX, textY, 7.5, "mono", midGray);
+
+  const heightUsed = headerStart - Math.min(textY, headerStart - logoH);
+  curY = headerStart - heightUsed - 15;
+
+  ensureSpace(5);
+  currentPage.push(`${MARGIN_L} ${curY.toFixed(2)} m ${PAGE_W - MARGIN_R} ${curY.toFixed(2)} l 0.3 0.3 0.35 RG 1.5 w S`);
+  curY -= 12;
+
+  // Case details
+  addText("DADOS DO CASO", 11, true, [0.2, 0.25, 0.3]);
+  addSpacer(4);
+  addText("Número: " + caseObj.caseNumber, 10, false);
+  addText("Título: " + caseObj.title, 10, false);
+  if (caseObj.org) addText("Órgão: " + caseObj.org, 10, false);
+  if (caseObj.unit) addText("Unidade: " + caseObj.unit, 10, false);
+  if (caseObj.authority) addText("Autoridade: " + caseObj.authority, 10, false);
+  if (caseObj.location) addText("Local: " + caseObj.location, 10, false);
+  addText("Data de abertura: " + formatDateTime(caseObj.openedAt), 10, false);
+  if (caseObj.notes) {
+    addSpacer(4);
+    addText("Notas: " + caseObj.notes, 9, false, [0.4, 0.45, 0.55]);
+  }
+  addSpacer(8);
+  addLine();
+  addSpacer(6);
+
+  // Timeline
+  addText("LINHA DO TEMPO (" + events.length + " eventos)", 11, true, [0.2, 0.25, 0.3]);
+  addSpacer(4);
+
+  for (let i = 0; i < events.length; i++) {
+    const e = events[i];
+    ensureSpace(LINE_HEIGHT * 3);
+    addText(`#${i + 1}  [${e.type}]  ${e.summary}`, 9, true);
+    addText(`    Data: ${formatDateTime(e.createdAt)}`, 8, false, [0.45, 0.5, 0.6]);
+    addText(`    Algoritmo de integridade: SHA-256`, 8, false, [0.45, 0.5, 0.6]);
+    addText(`    Hash do evento: ${e.hash}`, 7, "mono", [0.45, 0.5, 0.6]);
+    addText(`    Hash anterior: ${e.previousHash}`, 7, "mono", [0.45, 0.5, 0.6]);
+
+    if (e.type === "TRANSACAO_APREENSAO" && e.detail) {
+      try {
+        const txd = JSON.parse(e.detail);
+        ensureSpace(LINE_HEIGHT * 7);
+        if (txd.walletDest) addText("    Carteira destino (institucional): " + txd.walletDest, 8, false, [0.25, 0.56, 0.88]);
+        if (txd.walletOrigin) addText("    Carteira origem: " + txd.walletOrigin, 8, false, [0.45, 0.5, 0.6]);
+        if (txd.amount) addText("    Valor enviado: " + txd.amount, 8, false, [0.45, 0.5, 0.6]);
+        if (txd.fee) addText("    Taxa paga: " + txd.fee, 8, false, [0.45, 0.5, 0.6]);
+        if (txd.txHash) addText("    Hash TX: " + txd.txHash, 8, false, [0.45, 0.5, 0.6]);
+        if (txd.explorerUrl) addText("    Explorer: " + txd.explorerUrl, 8, false, [0.45, 0.5, 0.6]);
+      } catch (_) {
+        addText("    [Dados da transação]", 8, false, [0.45, 0.5, 0.6]);
+      }
+    } else if (e.type === "RECUPERACAO_CARTEIRA" && e.detail) {
+      try {
+        const rd = JSON.parse(e.detail);
+        ensureSpace(LINE_HEIGHT * 6);
+        if (rd.procedureDescription) addText("    Procedimento: " + rd.procedureDescription, 8, false, [0.45, 0.5, 0.6]);
+        if (rd.brand) addText("    Marca: " + rd.brand, 8, false, [0.45, 0.5, 0.6]);
+        if (rd.model) addText("    Modelo: " + rd.model, 8, false, [0.45, 0.5, 0.6]);
+        if (rd.software) addText("    Software/App: " + rd.software, 8, false, [0.45, 0.5, 0.6]);
+        // Embed recovery image if available
+        const recImg = recoveryImages.find(ri => ri.eventId === e.id);
+        if (recImg) {
+          addText("    Imagem do processo:", 8, false, [0.45, 0.5, 0.6]);
+          addImage(recImg, `RecImg_${e.id.replace(/[^a-zA-Z0-9]/g, '')}`);
+        }
+      } catch (_) {
+        addText("    [Dados de recuperação]", 8, false, [0.45, 0.5, 0.6]);
+      }
+    } else if (e.type === "ENTREGA" && e.detail) {
+      try {
+        const dd = JSON.parse(e.detail);
+        ensureSpace(LINE_HEIGHT * 7);
+        if (dd.object) addText("    Objeto: " + dd.object, 8, false, [0.45, 0.5, 0.6]);
+        if (dd.contentInfo) addText("    Conteúdo e Informações: " + dd.contentInfo, 8, false, [0.45, 0.5, 0.6]);
+        if (dd.deliveredBy) addText("    Entregue por: " + dd.deliveredBy, 8, false, [0.45, 0.5, 0.6]);
+        if (dd.receivedBy) addText("    Recebido por: " + dd.receivedBy, 8, false, [0.45, 0.5, 0.6]);
+        if (dd.fileHashes) {
+          addText("    Hashes dos arquivos:", 8, false, [0.45, 0.5, 0.6]);
+          const lines = dd.fileHashes.split("\n");
+          for (const line of lines) {
+            if (line.trim()) {
+              addText("      " + line.trim(), 7.5, "mono", [0.3, 0.35, 0.4]);
+            }
+          }
+        }
+        if (dd.signatureDelivered) {
+          const dataDelivered = JSON.stringify({
+            caseId: e.caseId,
+            type: "ENTREGA",
+            object: dd.object,
+            contentInfo: dd.contentInfo,
+            fileHashes: dd.fileHashes,
+            deliveredBy: dd.deliveredBy,
+            receivedBy: dd.receivedBy,
+            role: "deliveredBy"
+          });
+          const verified = await verifyDigitalSignature(dataDelivered, dd.signatureDelivered.signatureHex, dd.signatureDelivered.publicKeyJwk);
+          const status = verified ? "VÁLIDA" : "INVÁLIDA";
+          addText(`    Assinatura Digital (Entregador): [${status}] Chave ID: ${dd.signatureDelivered.keyHash.substring(0, 16)}...`, 7.5, "mono", verified ? [0.1, 0.5, 0.2] : [0.8, 0.1, 0.1]);
+        }
+        if (dd.signatureReceived) {
+          const dataReceived = JSON.stringify({
+            caseId: e.caseId,
+            type: "ENTREGA",
+            object: dd.object,
+            contentInfo: dd.contentInfo,
+            fileHashes: dd.fileHashes,
+            deliveredBy: dd.deliveredBy,
+            receivedBy: dd.receivedBy,
+            role: "receivedBy"
+          });
+          const verified = await verifyDigitalSignature(dataReceived, dd.signatureReceived.signatureHex, dd.signatureReceived.publicKeyJwk);
+          const status = verified ? "VÁLIDA" : "INVÁLIDA";
+          addText(`    Assinatura Digital (Recebedor): [${status}] Chave ID: ${dd.signatureReceived.keyHash.substring(0, 16)}...`, 7.5, "mono", verified ? [0.1, 0.5, 0.2] : [0.8, 0.1, 0.1]);
+        }
+        if (dd.notes) addText("    Notas: " + dd.notes, 8, false, [0.45, 0.5, 0.6]);
+        // Embed delivery image if available
+        const delImg = deliveryImages.find(di => di.eventId === e.id);
+        if (delImg) {
+          addText("    Imagem da entrega:", 8, false, [0.45, 0.5, 0.6]);
+          addImage(delImg, `DelImg_${e.id.replace(/[^a-zA-Z0-9]/g, '')}`);
+        }
+      } catch (_) {
+        addText("    [Dados da entrega]", 8, false, [0.45, 0.5, 0.6]);
+      }
+    } else if (e.type === "LOCALIZACAO_OBJETO" && e.detail) {
+      try {
+        const ld = JSON.parse(e.detail);
+        ensureSpace(LINE_HEIGHT * 6);
+        const locTypeMap = {
+          "dispositivo": "Dispositivo",
+          "anotacao": "Anotação",
+          "arquivo": "Arquivo",
+          "arma_fogo": "Arma de fogo",
+          "outro": "Outro"
+        };
+        const typeLabelLoc = locTypeMap[ld.objectType] || ld.objectType || '—';
+        addText("    Tipo de Objeto: " + typeLabelLoc, 8, false, [0.45, 0.5, 0.6]);
+        if (ld.description) addText("    Descrição: " + ld.description, 8, false, [0.45, 0.5, 0.6]);
+        if (ld.locationFound) addText("    Localização quando encontrado: " + ld.locationFound, 8, false, [0.45, 0.5, 0.6]);
+        if (ld.notes) addText("    Notas: " + ld.notes, 8, false, [0.45, 0.5, 0.6]);
+        // Embed location image if available
+        const locImg = locationImages.find(li => li.eventId === e.id);
+        if (locImg) {
+          addText("    Imagem do objeto:", 8, false, [0.45, 0.5, 0.6]);
+          addImage(locImg, `LocImg_${e.id.replace(/[^a-zA-Z0-9]/g, '')}`);
+        }
+      } catch (_) {
+        addText("    [Dados da localização]", 8, false, [0.45, 0.5, 0.6]);
+      }
+    } else if (e.type === "ASSINATURA_RELATORIO" && e.detail) {
+      try {
+        const sd = JSON.parse(e.detail);
+        ensureSpace(LINE_HEIGHT * 5);
+        if (sd.signatureName) addText("    Nome: " + sd.signatureName, 8, false, [0.45, 0.5, 0.6]);
+        if (sd.signatureRole) addText("    Cargo: " + sd.signatureRole, 8, false, [0.45, 0.5, 0.6]);
+        if (sd.signature) {
+          const dataSignatory = JSON.stringify({
+            caseId: e.caseId,
+            type: "ASSINATURA_RELATORIO",
+            signatureName: sd.signatureName,
+            signatureRole: sd.signatureRole
+          });
+          const verified = await verifyDigitalSignature(dataSignatory, sd.signature.signatureHex, sd.signature.publicKeyJwk);
+          const status = verified ? "VÁLIDA" : "INVÁLIDA";
+          addText(`    Assinatura Digital: [${status}] Chave ID: ${sd.signature.keyHash.substring(0, 16)}...`, 7.5, "mono", verified ? [0.1, 0.5, 0.2] : [0.8, 0.1, 0.1]);
+        }
+        if (sd.notes) addText("    Notas: " + sd.notes, 8, false, [0.45, 0.5, 0.6]);
+      } catch (_) {
+        addText("    [Dados da assinatura]", 8, false, [0.45, 0.5, 0.6]);
+      }
+    } else if (e.detail && e.type !== "SEED_REGISTRADA" && e.type !== "ENTREGA" && e.type !== "LOCALIZACAO_OBJETO" && e.type !== "ASSINATURA_RELATORIO") {
+      let detailText = e.detail;
+      if (detailText.length > 300) detailText = detailText.substring(0, 300) + "...";
+      addText("    Detalhe: " + detailText, 8, false, [0.45, 0.5, 0.6]);
+    } else if (e.type === "SEED_REGISTRADA") {
+      try {
+        const sd = JSON.parse(e.detail);
+        addText(`    Tipo sensível: ${sd.sensitiveType || "--"}, Modo: ${sd.mode || "--"}`, 8, false, [0.45, 0.5, 0.6]);
+        if (sd.showInReport && sd.valueFragment) {
+          addText(`    Valor/Seed: ${sd.valueFragment}`, 8, true, [0.2, 0.25, 0.3]);
+        } else {
+          addText("    [Valor não exibido no relatório]", 8, false, [0.75, 0.3, 0.3]);
+        }
+      } catch (_) {
+        addText("    [Dados sensíveis -- não exibidos]", 8, false, [0.75, 0.3, 0.3]);
+      }
+    }
+    addSpacer(4);
+  }
+
+  addLine();
+  addSpacer(6);
+
+  // Attachments with images
+  addText("ANEXOS (" + attachments.length + " arquivos)", 11, true, [0.2, 0.25, 0.3]);
+  addSpacer(4);
+
+  if (attachments.length === 0) {
+    addText("Nenhum anexo registrado.", 9, false, [0.45, 0.5, 0.6]);
+  } else {
+    for (const att of attachments) {
+      ensureSpace(LINE_HEIGHT * 4);
+      addText(`- ${att.fileName}  (${formatBytes(att.sizeBytes)})`, 9, true);
+      addText(`  Algoritmo: SHA-256`, 8, false, [0.45, 0.5, 0.6]);
+      addText(`  Hash: ${att.fileHash}`, 7, "mono", [0.45, 0.5, 0.6]);
+      addText(`  Data: ${formatDateTime(att.createdAt)}  |  Origem: ${att.origin}`, 8, false, [0.45, 0.5, 0.6]);
+      // Embed the image
+      const imgObj = imageObjects.find(io => io.attId === att.id);
+      if (imgObj) {
+        addImage(imgObj, `Img_${att.id.replace(/[^a-zA-Z0-9]/g, '')}`);
+      }
+      addSpacer(6);
+    }
+  }
+
+  // --- Seção de Assinaturas Física ---
+  const deliveryEvents = events.filter(e => e.type === "ENTREGA");
+  const signatureEvents = events.filter(e => e.type === "ASSINATURA_RELATORIO");
+
+  if (deliveryEvents.length > 0 || signatureEvents.length > 0) {
+    ensureSpace(LINE_HEIGHT * 4);
+    addSpacer(10);
+    addLine();
+    addSpacer(10);
+    addText("SEÇÃO DE ASSINATURAS DO RELATÓRIO", 11, true, [0.2, 0.25, 0.3]);
+    addSpacer(8);
+
+    for (const e of signatureEvents) {
+      try {
+        const sd = JSON.parse(e.detail);
+        const name = sd.signatureName || "";
+        const role = sd.signatureRole || "";
+        const dateStr = formatDateTime(e.createdAt);
+
+        ensureSpace(LINE_HEIGHT * 6);
+        addText(`Declaração de Assinatura do Relatório (Registrado em ${dateStr}):`, 9, true, [0.15, 0.15, 0.2]);
+        
+        let ySig = curY - 10;
+        if (sd.signature) {
+          const dataSignatory = JSON.stringify({
+            caseId: e.caseId,
+            type: "ASSINATURA_RELATORIO",
+            signatureName: sd.signatureName,
+            signatureRole: sd.signatureRole
+          });
+          const verified = await verifyDigitalSignature(dataSignatory, sd.signature.signatureHex, sd.signature.publicKeyJwk);
+          if (verified) {
+            ySig = drawText("[ASSINADO DIGITALMENTE]", MARGIN_L, ySig, 9, "bold", [0.1, 0.5, 0.2]);
+            ySig = drawText(`Chave ID: ${sd.signature.keyHash}`, MARGIN_L, ySig, 7.5, "mono", [0.3, 0.3, 0.3]);
+            ySig = drawText(`Assinatura: ${sd.signature.signatureHex.substring(0, 32)}...`, MARGIN_L, ySig, 7.5, "mono", [0.3, 0.3, 0.3]);
+          } else {
+            ySig = drawText("[ASSINATURA DIGITAL CORROMPIDA / INVÁLIDA]", MARGIN_L, ySig, 9, "bold", [0.8, 0.1, 0.1]);
+          }
+        } else {
+          ySig = drawText("____________________________________________________", MARGIN_L, ySig, 9, false, [0.4, 0.4, 0.4]);
+        }
+        ySig -= 12;
+        curY = drawText(`${name} (${role})`, MARGIN_L, ySig, 9, false, [0.2, 0.2, 0.2]) - 15;
+      } catch (_) {}
+    }
+
+    for (const e of deliveryEvents) {
+      try {
+        const dd = JSON.parse(e.detail);
+        const objectName = dd.object || "Objeto";
+        const deliveredBy = dd.deliveredBy || "";
+        const receivedBy = dd.receivedBy || "";
+        const dateStr = formatDateTime(e.createdAt);
+
+        ensureSpace(LINE_HEIGHT * 8);
+        addText(`Termo de Entrega / Repasse do Objeto: ${objectName}`, 9, true, [0.15, 0.15, 0.2]);
+        addText(`Registrado em: ${dateStr}`, 8, false, [0.4, 0.45, 0.5]);
+        addSpacer(12);
+
+        const colW = 220;
+        const col1X = MARGIN_L;
+        const col2X = MARGIN_L + colW + 55;
+
+        ensureSpace(60);
+
+        let yCol1 = curY;
+        if (dd.signatureDelivered) {
+          const dataDelivered = JSON.stringify({
+            caseId: e.caseId,
+            type: "ENTREGA",
+            object: dd.object,
+            contentInfo: dd.contentInfo,
+            fileHashes: dd.fileHashes,
+            deliveredBy: dd.deliveredBy,
+            receivedBy: dd.receivedBy,
+            role: "deliveredBy"
+          });
+          const verified = await verifyDigitalSignature(dataDelivered, dd.signatureDelivered.signatureHex, dd.signatureDelivered.publicKeyJwk);
+          if (verified) {
+            yCol1 = drawText("[ASSINADO DIGITALMENTE]", col1X, yCol1, 9, "bold", [0.1, 0.5, 0.2], colW);
+            yCol1 = drawText(`Chave ID: ${dd.signatureDelivered.keyHash.substring(0, 16)}...`, col1X, yCol1, 7.5, "mono", [0.3, 0.3, 0.3], colW);
+            yCol1 = drawText(`Assinatura: ${dd.signatureDelivered.signatureHex.substring(0, 16)}...`, col1X, yCol1, 7.5, "mono", [0.3, 0.3, 0.3], colW);
+          } else {
+            yCol1 = drawText("[ASSINATURA INVÁLIDA]", col1X, yCol1, 9, "bold", [0.8, 0.1, 0.1], colW);
+          }
+        } else {
+          yCol1 = drawText("___________________________________", col1X, yCol1, 9, false, [0.4, 0.4, 0.4], colW);
+        }
+
+        let yCol2 = curY;
+        if (dd.signatureReceived) {
+          const dataReceived = JSON.stringify({
+            caseId: e.caseId,
+            type: "ENTREGA",
+            object: dd.object,
+            contentInfo: dd.contentInfo,
+            fileHashes: dd.fileHashes,
+            deliveredBy: dd.deliveredBy,
+            receivedBy: dd.receivedBy,
+            role: "receivedBy"
+          });
+          const verified = await verifyDigitalSignature(dataReceived, dd.signatureReceived.signatureHex, dd.signatureReceived.publicKeyJwk);
+          if (verified) {
+            yCol2 = drawText("[ASSINADO DIGITALMENTE]", col2X, yCol2, 9, "bold", [0.1, 0.5, 0.2], colW);
+            yCol2 = drawText(`Chave ID: ${dd.signatureReceived.keyHash.substring(0, 16)}...`, col2X, yCol2, 7.5, "mono", [0.3, 0.3, 0.3], colW);
+            yCol2 = drawText(`Assinatura: ${dd.signatureReceived.signatureHex.substring(0, 16)}...`, col2X, yCol2, 7.5, "mono", [0.3, 0.3, 0.3], colW);
+          } else {
+            yCol2 = drawText("[ASSINATURA INVÁLIDA]", col2X, yCol2, 9, "bold", [0.8, 0.1, 0.1], colW);
+          }
+        } else {
+          yCol2 = drawText("___________________________________", col2X, yCol2, 9, false, [0.4, 0.4, 0.4], colW);
+        }
+
+        curY = Math.min(yCol1, yCol2) - 10;
+        const nextY1 = drawText(`Entregue por: ${deliveredBy}`, col1X, curY, 8.5, "bold", [0.15, 0.15, 0.2], colW);
+        const nextY2 = drawText(`Recebido por: ${receivedBy}`, col2X, curY, 8.5, "bold", [0.15, 0.15, 0.2], colW);
+
+        curY = Math.min(nextY1, nextY2) - 15;
+      } catch (_) {}
+    }
+  }
+
+  addSpacer(12);
+  addLine();
+  addSpacer(6);
+
+  addText("Relatório gerado em: " + new Date().toLocaleString("pt-BR"), 8, false, [0.45, 0.5, 0.6]);
+  addText("Fênix Audit Lite v1.0 -- Protótipo forense local", 8, false, [0.45, 0.5, 0.6]);
+  addText("Algoritmo de integridade: SHA-256", 8, false, [0.45, 0.5, 0.6]);
+  if (institutionConfig.name) {
+    addText("Instituição: " + institutionConfig.name, 8, false, [0.45, 0.5, 0.6]);
+  }
+  addText("Este procedimento foi estruturado com base nos princípios da ABNT NBR ISO/IEC 27037", 8, false, [0.45, 0.5, 0.6]);
+
+  // Push last page
+  pages.push({ commands: currentPage, images: currentPageImages });
+
+  // ——— Assemble the PDF as binary ———
+
+  const catalogId = addObj("");
+  const pagesId = addObj("");
+  const font1Id = addObj("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");
+  const font2Id = addObj("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>");
+  const font3Id = addObj("<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding /WinAnsiEncoding >>");
+
+  const pageObjIds = [];
+  const streamObjIds = [];
+
+  for (const pageData of pages) {
+    const streamContent = pageData.commands.join("\n");
+    const streamBytes = new TextEncoder().encode(streamContent);
+    const streamId = addObj(`<< /Length ${streamBytes.length} >>\nstream\n${streamContent}\nendstream`);
+    streamObjIds.push(streamId);
+    const pageId = addObj("");
+    pageObjIds.push(pageId);
+  }
+
+  objects.find(o => o.id === catalogId).content = `<< /Type /Catalog /Pages ${pagesId} 0 R >>`;
+  objects.find(o => o.id === pagesId).content = `<< /Type /Pages /Kids [${pageObjIds.map(id => `${id} 0 R`).join(" ")}] /Count ${pageObjIds.length} >>`;
+
+  // Build page objects with image XObject references in Resources
+  for (let i = 0; i < pageObjIds.length; i++) {
+    const pageData = pages[i];
+    let xobjEntries = [];
+    if (pageData.images.length > 0) {
+      xobjEntries = pageData.images.map(im => `/${im.imgName} ${im.imgObjId} 0 R`);
+    }
+    if (logoImgObj) {
+      xobjEntries.push(`/InstitutionLogo ${logoImgObj.objId} 0 R`);
+    }
+    let xobjDict = '';
+    if (xobjEntries.length > 0) {
+      xobjDict = ` /XObject << ${xobjEntries.join(' ')} >>`;
+    }
+    objects.find(o => o.id === pageObjIds[i]).content = `<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 ${PAGE_W} ${PAGE_H}] /Contents ${streamObjIds[i]} 0 R /Resources << /Font << /F1 ${font1Id} 0 R /F2 ${font2Id} 0 R /F3 ${font3Id} 0 R >>${xobjDict} >> >>`;
+  }
+
+  // Build final binary PDF
+  const encoder = new TextEncoder();
+  const chunks = [];
+  let totalLen = 0;
+
+  function writeStr(s) {
+    const b = encoder.encode(s);
+    chunks.push(b);
+    totalLen += b.length;
+  }
+
+  function writeBytes(b) {
+    chunks.push(b);
+    totalLen += b.length;
+  }
+
+  writeStr("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n");
+  const offsets = [];
+
+  for (const obj of objects) {
+    offsets.push(totalLen);
+    if (obj.binaryStream) {
+      // Binary object (image)
+      writeStr(`${obj.id} 0 obj\n${obj.binaryStream.header}\nstream\n`);
+      writeBytes(obj.binaryStream.data);
+      writeStr(`\nendstream\nendobj\n`);
+    } else {
+      writeStr(`${obj.id} 0 obj\n${obj.content}\nendobj\n`);
+    }
+  }
+
+  const xrefOffset = totalLen;
+  writeStr("xref\n");
+  writeStr(`0 ${objects.length + 1}\n`);
+  writeStr("0000000000 65535 f \n");
+  for (const offset of offsets) {
+    writeStr(offset.toString().padStart(10, "0") + " 00000 n \n");
+  }
+
+  writeStr("trailer\n");
+  writeStr(`<< /Size ${objects.length + 1} /Root ${catalogId} 0 R >>\n`);
+  writeStr("startxref\n");
+  writeStr(xrefOffset + "\n");
+  writeStr("%%EOF\n");
+
+  // Concatenate all chunks into a single Uint8Array
+  const result = new Uint8Array(totalLen);
+  let pos = 0;
+  for (const chunk of chunks) {
+    result.set(chunk, pos);
+    pos += chunk.length;
+  }
+
+  return result;
+}
+
+/* ========================================
+   MODALS
+   ======================================== */
+
+function openModal(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.add("active");
+}
+
+function closeModal(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove("active");
+}
+
+// Close modals on overlay click
+document.addEventListener("click", function(e) {
+  if (e.target.classList.contains("modal-overlay")) {
+    e.target.classList.remove("active");
+  }
+});
+
+// Close modals on Escape
+document.addEventListener("keydown", function(e) {
+  if (e.key === "Escape") {
+    document.querySelectorAll(".modal-overlay.active").forEach(m => m.classList.remove("active"));
+    closeImagePreview();
+  }
+});
+
+/* ========================================
+   TOAST
+   ======================================== */
+
+function showToast(message, type) {
+  type = type || "info";
+  const container = document.getElementById("toastContainer");
+  const toast = document.createElement("div");
+  toast.className = "toast toast-" + type;
+  toast.textContent = message;
+  container.appendChild(toast);
+  setTimeout(() => {
+    if (toast.parentNode) toast.parentNode.removeChild(toast);
+  }, 3000);
+}
+
+/* ========================================
+   UTILITÁRIOS
+   ======================================== */
+
+function esc(str) {
+  if (!str) return "";
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function formatDate(isoStr) {
+  try {
+    const d = new Date(isoStr);
+    return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+  } catch (_) {
+    return isoStr;
+  }
+}
+
+function formatDateTime(isoStr) {
+  try {
+    const d = new Date(isoStr);
+    return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }) + " " +
+           d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  } catch (_) {
+    return isoStr;
+  }
+}
+
+function formatBytes(bytes) {
+  if (bytes === 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+}
+
+function copyToClipboard(text) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast("Hash copiado!", "info");
+    });
+  } else {
+    // Fallback
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    showToast("Hash copiado!", "info");
+  }
+}
+
+/* ========================================
+   INICIALIZAÇÃO
+   ======================================== */
+
+/* ========================================
+   INSTITUTION CONFIG
+   ======================================== */
+
+function updateAppHeaders() {
+  const logoList = document.getElementById("headerLogoList");
+  const logoDetail = document.getElementById("headerLogoDetail");
+  const subtitleList = document.getElementById("headerSubtitleList");
+  const subtitleDetail = document.getElementById("headerSubtitleDetail");
+
+  if (institutionConfig.logoDataUrl) {
+    const imgHtml = `<img src="${institutionConfig.logoDataUrl}" style="width:100%;height:100%;object-fit:contain;">`;
+    if (logoList) logoList.innerHTML = imgHtml;
+    if (logoDetail) logoDetail.innerHTML = imgHtml;
+  } else {
+    if (logoList) logoList.innerHTML = "🔥";
+    if (logoDetail) logoDetail.innerHTML = "🔥";
+  }
+
+  if (institutionConfig.name) {
+    if (subtitleList) subtitleList.textContent = institutionConfig.name;
+    if (subtitleDetail) subtitleDetail.textContent = institutionConfig.name;
+  } else {
+    if (subtitleList) subtitleList.textContent = "Registro forense local";
+    if (subtitleDetail) subtitleDetail.textContent = "Registro forense local";
+  }
+}
+
+function loadInstitutionConfig() {
+  try {
+    const raw = localStorage.getItem(INSTITUTION_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      institutionConfig = {
+        name: parsed.name || "",
+        logoDataUrl: parsed.logoDataUrl || null
+      };
+    }
+    updateAppHeaders();
+  } catch (e) {
+    console.error("Erro ao carregar config da instituicao:", e);
+  }
+}
+
+function saveInstitutionConfig() {
+  institutionConfig.name = document.getElementById("institutionName").value.trim();
+  try {
+    localStorage.setItem(INSTITUTION_KEY, JSON.stringify(institutionConfig));
+    updateAppHeaders();
+    showToast("Configuracao da instituicao salva!", "success");
+  } catch (e) {
+    console.error("Erro ao salvar config:", e);
+    showToast("Erro ao salvar configuracao.", "error");
+  }
+}
+
+function handleLogoUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  event.target.value = "";
+
+  if (!file.type.match(/^image\/(png|jpeg|svg\+xml)$/)) {
+    showToast("Formato invalido. Use PNG, JPG ou SVG.", "error");
+    return;
+  }
+
+  if (file.size > 500 * 1024) {
+    showToast("Arquivo muito grande (max. 500 KB).", "error");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    institutionConfig.logoDataUrl = e.target.result;
+    renderLogoPreview();
+    saveInstitutionConfig();
+    showToast("Brasao carregado!", "success");
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeLogo() {
+  institutionConfig.logoDataUrl = null;
+  renderLogoPreview();
+  saveInstitutionConfig();
+  showToast("Logo removido.", "info");
+}
+
+function renderLogoPreview() {
+  const preview = document.getElementById("logoPreview");
+  const actions = document.getElementById("logoActions");
+  if (institutionConfig.logoDataUrl) {
+    preview.innerHTML = `<img src="${institutionConfig.logoDataUrl}" alt="Brasao">`;
+    actions.style.display = "flex";
+  } else {
+    preview.innerHTML = "\ud83c\udfdb";
+    actions.style.display = "none";
+  }
+}
+
+function renderInstitutionConfig() {
+  document.getElementById("institutionName").value = institutionConfig.name || "";
+  renderLogoPreview();
+}
+
+window.onload = function() {
+  appState = loadStateFromStorage();
+  loadInstitutionConfig();
+  renderUnlockScreen();
+};
+
+</script>
+</body>
+</html>
