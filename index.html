@@ -2866,7 +2866,10 @@ async function handleExportPdf() {
   try {
     const pdfBytes = await generatePdf(c, events, attachments);
     const safeName = c.caseNumber.replace(/[^a-zA-Z0-9]/g, "_");
-    downloadFile(`fnix-audit-lite-${safeName}.pdf`, pdfBytes, "application/pdf");
+    const now = new Date();
+    const pad = (num) => String(num).padStart(2, '0');
+    const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+    downloadFile(`relatorio-forense-${safeName}-${dateStr}.pdf`, pdfBytes, "application/pdf");
     showToast("PDF exportado!", "success");
   } catch (e) {
     console.error("Erro ao gerar PDF:", e);
