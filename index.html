@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Fênix Audit Lite</title>
+<title>Fênix Log</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* ============================
-   FÊNIX AUDIT LITE — CSS
+   FÊNIX LOG — CSS
    ============================ */
 
 /* Fontes carregadas via <link> no <head> */
@@ -1061,7 +1061,7 @@ a { color: var(--accent-amber); text-decoration: none; }
 <div id="sectionUnlock" class="section active">
   <div class="unlock-screen">
     <div class="unlock-logo">🔥</div>
-    <h1 class="unlock-title">Fênix Audit Lite</h1>
+    <h1 class="unlock-title">Fênix Log</h1>
     <p class="unlock-desc">Aplicação local para registro forense de criptoativos. Todos os dados ficam armazenados apenas neste navegador.</p>
     <div class="unlock-form">
       <div id="unlockError" class="unlock-error"></div>
@@ -1100,7 +1100,7 @@ a { color: var(--accent-amber); text-decoration: none; }
       <div class="header-brand">
         <div class="header-logo" id="headerLogoList">🔥</div>
         <div>
-          <div class="header-title" id="headerTitleList">Fênix Audit Lite</div>
+          <div class="header-title" id="headerTitleList">Fênix Log</div>
           <div class="header-subtitle" id="headerSubtitleList">Registro forense local</div>
         </div>
       </div>
@@ -1140,7 +1140,7 @@ a { color: var(--accent-amber); text-decoration: none; }
     <div id="caseListContainer"></div>
 
     <div class="app-footer">
-      <div>Fênix Audit Lite v1.0 — Protótipo forense local</div>
+      <div>Fênix Log v1.0 — Protótipo forense local</div>
       <div>Dados armazenados apenas neste navegador. Exporte regularmente.</div>
       <div style="margin-top:6px;">O PIN é uma barreira local simples; não substitui criptografia forte.</div>
     </div>
@@ -1154,7 +1154,7 @@ a { color: var(--accent-amber); text-decoration: none; }
       <div class="header-brand">
         <div class="header-logo" id="headerLogoDetail">🔥</div>
         <div>
-          <div class="header-title" id="headerTitleDetail">Fênix Audit Lite</div>
+          <div class="header-title" id="headerTitleDetail">Fênix Log</div>
           <div class="header-subtitle" id="headerSubtitleDetail">Registro forense local</div>
         </div>
       </div>
@@ -1195,7 +1195,7 @@ a { color: var(--accent-amber); text-decoration: none; }
     </div>
 
     <div class="app-footer">
-      <div>Fênix Audit Lite v1.0 — Protótipo forense local</div>
+      <div>Fênix Log v1.0 — Protótipo forense local</div>
       <div>Faça exportações regulares em JSON e/ou PDF para backup.</div>
     </div>
   </div>
@@ -1571,7 +1571,7 @@ a { color: var(--accent-amber); text-decoration: none; }
 </div>
 
 <!-- ======================================================
-     JAVASCRIPT — FÊNIX AUDIT LITE
+     JAVASCRIPT — FÊNIX LOG
      ====================================================== -->
 <script>
 /* ========================================
@@ -1627,10 +1627,10 @@ async function loadStateFromDb() {
         };
         await _idbPut(state);
         localStorage.setItem(MIGRATED_FLAG, "1");
-        console.info("Fênix Audit: dados migrados do localStorage para IndexedDB com sucesso.");
+        console.info("Fênix Log: dados migrados do localStorage para IndexedDB com sucesso.");
         return state;
       } catch (e) {
-        console.warn("Fênix Audit: falha na migração do localStorage:", e);
+        console.warn("Fênix Log: falha na migração do localStorage:", e);
       }
     }
     localStorage.setItem(MIGRATED_FLAG, "1"); // marca como migrado mesmo sem dados
@@ -3368,7 +3368,7 @@ function exportCaseAsJson(caseId) {
   const attachments = getAttachmentsForCase(caseId);
   const exportObj = {
     version: "1.0",
-    application: "Fênix Audit Lite",
+    application: "Fênix Log",
     exportedAt: new Date().toISOString(),
     case: c,
     events,
@@ -3382,7 +3382,7 @@ function handleExportJson() {
   if (!json) return;
   const c = getCaseById(currentCaseId);
   const safeName = c.caseNumber.replace(/[^a-zA-Z0-9]/g, "_");
-  downloadFile(`fnix-audit-lite-${safeName}.json`, json, "application/json");
+  downloadFile(`fnix-log-${safeName}.json`, json, "application/json");
   showToast("JSON exportado!", "success");
 }
 
@@ -4021,23 +4021,44 @@ async function generatePdf(caseObj, events, attachments) {
     textX = MARGIN_L + w + 15;
   }
 
-  let textY = headerStart - 4;
+  // ─── Cores do cabeçalho ───
   const darkGray = [0.15, 0.15, 0.2];
   const midGray = [0.4, 0.45, 0.5];
   const primaryAccent = [0.2, 0.25, 0.3];
 
+  // ─── Tamanhos de fonte do cabeçalho ───
+  const s1 = 8.5;   // Instituição
+  const s2 = 18;     // FENIX LOG
+  const s3 = 10;     // Subtítulo
+  const s4 = 7;      // Metadados
+
+  // ─── Posições de baseline (leading compacto) ───
+  // Cada baseline é calculada como: anterior - leading
+  // Leading = distância baseline-a-baseline (aprox. 1.15× a fonte da linha ANTERIOR)
+  const y1 = headerStart - 2;              // Instituição: logo alinhada ao topo
+  const y2 = y1 - s1 - 11;                 // FENIX LOG: 19.5pt abaixo
+  const y3 = y2 - s2 * 0.85;              // Subtítulo: ~15pt abaixo (FENIX LOG é caps, sem descendentes)
+  const y4 = y3 - s3 - 1;                 // Metadados: 11pt abaixo
+
+  // Linha 1: Instituição
   if (institutionConfig.name) {
-    textY = drawText(institutionConfig.name.toUpperCase(), textX, textY, 8.5, "bold", midGray) - 4;
+    drawText(institutionConfig.name.toUpperCase(), textX, y1, s1, "bold", midGray);
   } else {
-    textY = drawText("PROTOCOLO DE SEGURANÇA E AUDITORIA FORENSE", textX, textY, 8, "bold", midGray) - 4;
+    drawText("PROTOCOLO DE SEGURANÇA E AUDITORIA FORENSE", textX, y1, s1, "bold", midGray);
   }
 
-  textY = drawText("FENIX AUDIT LITE", textX, textY, 18, "bold", primaryAccent) - 5;
-  textY = drawText("Relatório de Integridade e Custódia de Evidências", textX, textY, 11, false, darkGray) - 4;
-  textY = drawText("Algoritmo de Integridade: SHA-256 | Cadeia de Custódia Local", textX, textY, 7.5, "mono", midGray);
+  // Linha 2: FENIX LOG
+  drawText("FENIX LOG", textX, y2, s2, "bold", primaryAccent);
 
-  const heightUsed = headerStart - Math.min(textY, headerStart - logoH);
-  curY = headerStart - heightUsed - 16;
+  // Linha 3: Subtítulo
+  drawText("Relatório de Integridade e Custódia de Evidências", textX, y3, s3, false, darkGray);
+
+  // Linha 4: Metadados
+  drawText("Algoritmo de Integridade: SHA-256 | Cadeia de Custódia Local", textX, y4, s4, "mono", midGray);
+
+  const textEndY = y4 - 2;
+  const heightUsed = headerStart - Math.min(textEndY, headerStart - logoH);
+  curY = headerStart - heightUsed - 10;
 
   ensureSpace(5);
   currentPage.push(`${MARGIN_L} ${curY.toFixed(2)} m ${PAGE_W - MARGIN_R} ${curY.toFixed(2)} l 0.3 0.3 0.35 RG 1.5 w S`);
@@ -4404,7 +4425,7 @@ async function generatePdf(caseObj, events, attachments) {
   addSpacer(6);
 
   addText("Relatório gerado em: " + new Date().toLocaleString("pt-BR"), 8, false, [0.45, 0.5, 0.6]);
-  addText("Fênix Audit Lite v1.0 -- Protótipo forense local", 8, false, [0.45, 0.5, 0.6]);
+  addText("Fênix Log v1.0 -- Protótipo forense local", 8, false, [0.45, 0.5, 0.6]);
   addText("Algoritmo de integridade: SHA-256", 8, false, [0.45, 0.5, 0.6]);
   if (institutionConfig.name) {
     addText("Instituição: " + institutionConfig.name, 8, false, [0.45, 0.5, 0.6]);
