@@ -790,6 +790,9 @@ a { color: var(--accent-amber); text-decoration: none; }
 .recovery-fields { display: none; }
 .recovery-fields.active { display: block; }
 
+.other-fields { display: none; }
+.other-fields.active { display: block; }
+
 .recovery-img-preview {
   max-width: 100%;
   max-height: 200px;
@@ -1262,6 +1265,12 @@ a { color: var(--accent-amber); text-decoration: none; }
         <label class="form-label">Notas operacionais (não secretas)</label>
         <textarea id="neSeedNotes" class="form-textarea" placeholder="Notas operacionais..."></textarea>
       </div>
+      <div class="form-group">
+        <label class="form-label">Imagem de evidência (opcional)</label>
+        <button class="btn btn-secondary btn-sm" type="button" onclick="document.getElementById('seedImageInput').click()">📷 Selecionar imagem</button>
+        <input type="file" id="seedImageInput" accept="image/*" style="display:none;" onchange="handleSeedImageSelect(event)">
+        <div id="seedImgPreviewContainer"></div>
+      </div>
     </div>
 
     <!-- Campos extras TRANSACAO_APREENSAO -->
@@ -1294,6 +1303,12 @@ a { color: var(--accent-amber); text-decoration: none; }
         <label class="form-label">URL do explorador</label>
         <input id="neTxExplorerUrl" class="form-input" placeholder="Ex: https://etherscan.io/tx/0x...">
         <p class="form-hint">Link para verificar a transação no explorador de blocos</p>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Imagem de evidência (opcional)</label>
+        <button class="btn btn-secondary btn-sm" type="button" onclick="document.getElementById('txImageInput').click()">📷 Selecionar imagem</button>
+        <input type="file" id="txImageInput" accept="image/*" style="display:none;" onchange="handleTxImageSelect(event)">
+        <div id="txImgPreviewContainer"></div>
       </div>
     </div>
 
@@ -1351,12 +1366,12 @@ a { color: var(--accent-amber); text-decoration: none; }
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Assinatura Digital - Senha do Entregador (opcional)</label>
-          <input id="neDeliveryByPassphrase" type="password" class="form-input" placeholder="Senha para assinatura digital">
+          <label class="form-label">Assinatura Digital - Telefone do Entregador (opcional)</label>
+          <input id="neDeliveryByPassphrase" type="text" class="form-input" placeholder="Formato: (xx)xxxxxxxxx" maxlength="13" oninput="this.value = formatPhoneInput(this.value)">
         </div>
         <div class="form-group">
-          <label class="form-label">Assinatura Digital - Senha do Recebedor (opcional)</label>
-          <input id="neDeliveryToPassphrase" type="password" class="form-input" placeholder="Senha para assinatura digital">
+          <label class="form-label">Assinatura Digital - Telefone do Recebedor (opcional)</label>
+          <input id="neDeliveryToPassphrase" type="text" class="form-input" placeholder="Formato: (xx)xxxxxxxxx" maxlength="13" oninput="this.value = formatPhoneInput(this.value)">
         </div>
       </div>
       <div class="form-group">
@@ -1425,6 +1440,16 @@ a { color: var(--accent-amber); text-decoration: none; }
       </div>
     </div>
 
+    <!-- Campos extras NOTA / OUTRO (imagem) -->
+    <div id="otherFields" class="other-fields">
+      <div class="form-group" style="margin-top:12px;">
+        <label class="form-label">Imagem de evidência (opcional)</label>
+        <button class="btn btn-secondary btn-sm" type="button" onclick="document.getElementById('otherImageInput').click()">📷 Selecionar imagem</button>
+        <input type="file" id="otherImageInput" accept="image/*" style="display:none;" onchange="handleOtherImageSelect(event)">
+        <div id="otherImgPreviewContainer"></div>
+      </div>
+    </div>
+
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('modalNewEvent')">Cancelar</button>
       <button class="btn btn-primary" onclick="handleCreateEvent()">Registrar evento</button>
@@ -1455,35 +1480,99 @@ let currentCaseId = null;
 let institutionConfig = { name: "", logoDataUrl: null };
 
 /* ========================================
-   LOCALSTORAGE
+   INDEXEDDB — ARMAZENAMENTO PRINCIPAL
+   (substitui localStorage; suporta centenas de MB)
    ======================================== */
 
-function loadStateFromStorage() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) {
-    return { pinHash: null, cases: [], eventsByCase: {}, attachmentsByCase: {} };
-  }
-  try {
-    const parsed = JSON.parse(raw);
-    return {
-      pinHash: parsed.pinHash || null,
-      cases: Array.isArray(parsed.cases) ? parsed.cases : [],
-      eventsByCase: parsed.eventsByCase || {},
-      attachmentsByCase: parsed.attachmentsByCase || {}
+const DB_NAME    = "fnixAuditLiteDB";
+const DB_VERSION = 1;
+const DB_STORE   = "appState";
+const DB_KEY     = "main";
+
+let _db = null;
+
+function openDb() {
+  if (_db) return Promise.resolve(_db);
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = function(e) {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(DB_STORE)) {
+        db.createObjectStore(DB_STORE, { keyPath: "id" });
+      }
     };
+    req.onsuccess = function(e) { _db = e.target.result; resolve(_db); };
+    req.onerror   = function(e) { reject(e.target.error); };
+  });
+}
+
+async function loadStateFromDb() {
+  // ── Migração automática do localStorage (executa só uma vez) ──────────────
+  const MIGRATED_FLAG = "fnixMigratedToIDB";
+  if (!localStorage.getItem(MIGRATED_FLAG)) {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        const state = {
+          pinHash: parsed.pinHash || null,
+          cases: Array.isArray(parsed.cases) ? parsed.cases : [],
+          eventsByCase: parsed.eventsByCase || {},
+          attachmentsByCase: parsed.attachmentsByCase || {}
+        };
+        await _idbPut(state);
+        localStorage.setItem(MIGRATED_FLAG, "1");
+        console.info("Fênix Audit: dados migrados do localStorage para IndexedDB com sucesso.");
+        return state;
+      } catch (e) {
+        console.warn("Fênix Audit: falha na migração do localStorage:", e);
+      }
+    }
+    localStorage.setItem(MIGRATED_FLAG, "1"); // marca como migrado mesmo sem dados
+  }
+  // ── Leitura normal do IndexedDB ───────────────────────────────────────────
+  try {
+    const db = await openDb();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(DB_STORE, "readonly");
+      const req = tx.objectStore(DB_STORE).get(DB_KEY);
+      req.onsuccess = function(e) {
+        const rec = e.target.result;
+        if (!rec) {
+          resolve({ pinHash: null, cases: [], eventsByCase: {}, attachmentsByCase: {} });
+        } else {
+          resolve({
+            pinHash: rec.pinHash || null,
+            cases: Array.isArray(rec.cases) ? rec.cases : [],
+            eventsByCase: rec.eventsByCase || {},
+            attachmentsByCase: rec.attachmentsByCase || {}
+          });
+        }
+      };
+      req.onerror = () => reject(req.error);
+    });
   } catch (e) {
-    console.error("Erro ao carregar estado:", e);
+    console.error("Erro ao carregar estado do IndexedDB:", e);
     return { pinHash: null, cases: [], eventsByCase: {}, attachmentsByCase: {} };
   }
 }
 
-function saveStateToStorage() {
+async function saveStateToDb() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+    await _idbPut(appState);
   } catch (e) {
     console.error("Erro ao salvar estado:", e);
-    showToast("Erro ao salvar dados! Verifique o espaço de armazenamento.", "error");
+    showToast("Erro ao salvar dados!", "error");
   }
+}
+
+function _idbPut(state) {
+  return openDb().then(db => new Promise((resolve, reject) => {
+    const tx  = db.transaction(DB_STORE, "readwrite");
+    const req = tx.objectStore(DB_STORE).put({ id: DB_KEY, ...state });
+    req.onsuccess = () => resolve();
+    req.onerror   = () => reject(req.error);
+  }));
 }
 
 /* ========================================
@@ -1638,7 +1727,7 @@ function isPinConfigured() {
 
 async function setNewPin(pin) {
   appState.pinHash = await hashPin(pin);
-  saveStateToStorage();
+  await saveStateToDb();
 }
 
 async function checkPin(pin) {
@@ -1827,7 +1916,7 @@ async function createCase(caseData) {
   const evt = await createCustodyEvent(id, "CASO_CRIADO", "Caso criado: " + caseData.caseNumber, null);
   appState.eventsByCase[id].push(evt);
 
-  saveStateToStorage();
+  await saveStateToDb();
   return newCase;
 }
 
@@ -1986,6 +2075,7 @@ async function renderTimeline(caseId) {
               ${dObj.mode === "partial" && dObj.valueFragment ? `<div><strong>Fragmento:</strong> ${esc(dObj.valueFragment)}</div>` : ''}
               ${dObj.showInReport ? '<div style="color:var(--accent-green); font-size: 0.8rem; margin-top: 4px;">📂 Configurado para exibição no relatório</div>' : ''}
               ${dObj.nonSecretNotes ? `<div><strong>Notas:</strong> ${esc(dObj.nonSecretNotes)}</div>` : ''}
+              ${dObj.imageDataUrl ? `<div style="margin-top:8px;"><img src="${dObj.imageDataUrl}" style="max-width:100%;max-height:200px;border-radius:var(--radius-sm);border:1px solid var(--border-primary);cursor:pointer;" onclick="event.stopPropagation();document.getElementById('imgPreviewImg').src='${dObj.imageDataUrl}';document.getElementById('imgPreviewOverlay').classList.add('active');" alt="Imagem da seed"></div>` : ''}
             </div>`;
         } catch (_) {
           detailHtml = `<div class="timeline-detail">${esc(e.detail)}</div>`;
@@ -2001,6 +2091,7 @@ async function renderTimeline(caseId) {
               ${txObj.fee ? `<div><strong>Taxa paga:</strong> <span style="font-family:var(--font-mono);">${esc(txObj.fee)}</span></div>` : ''}
               ${txObj.txHash ? `<div><strong>Hash TX:</strong> <span class="timeline-hash" style="font-size:0.78rem;" onclick="copyToClipboard('${esc(txObj.txHash)}')"> ${esc(txObj.txHash)}</span></div>` : ''}
               ${txObj.explorerUrl ? `<div><strong>Explorador:</strong> <a href="${esc(txObj.explorerUrl)}" target="_blank" rel="noopener" style="color:var(--accent-amber);word-break:break-all;">${esc(txObj.explorerUrl)}</a></div>` : ''}
+              ${txObj.imageDataUrl ? `<div style="margin-top:8px;"><img src="${txObj.imageDataUrl}" style="max-width:100%;max-height:200px;border-radius:var(--radius-sm);border:1px solid var(--border-primary);cursor:pointer;" onclick="event.stopPropagation();document.getElementById('imgPreviewImg').src='${txObj.imageDataUrl}';document.getElementById('imgPreviewOverlay').classList.add('active');" alt="Imagem da transação"></div>` : ''}
             </div>`;
         } catch (_) {
           detailHtml = `<div class="timeline-detail">${esc(e.detail)}</div>`;
@@ -2128,6 +2219,17 @@ async function renderTimeline(caseId) {
         } catch (_) {
           detailHtml = `<div class="timeline-detail">${esc(e.detail)}</div>`;
         }
+      } else if (e.type === "NOTA" || e.type === "OUTRO") {
+        try {
+          const parsed = JSON.parse(e.detail);
+          detailHtml = `
+            <div class="timeline-detail">
+              ${parsed.notes ? `<div>${esc(parsed.notes)}</div>` : ''}
+              ${parsed.imageDataUrl ? `<div style="margin-top:8px;"><img src="${parsed.imageDataUrl}" style="max-width:100%;max-height:200px;border-radius:var(--radius-sm);border:1px solid var(--border-primary);cursor:pointer;" onclick="event.stopPropagation();document.getElementById('imgPreviewImg').src='${parsed.imageDataUrl}';document.getElementById('imgPreviewOverlay').classList.add('active');" alt="Imagem do evento"></div>` : ''}
+            </div>`;
+        } catch (_) {
+          detailHtml = `<div class="timeline-detail">${esc(e.detail)}</div>`;
+        }
       } else {
         try {
           const parsed = JSON.parse(e.detail);
@@ -2187,6 +2289,8 @@ function openNewEventModal() {
   document.getElementById("neSeedValue").value = "";
   document.getElementById("neSeedNotes").value = "";
   document.getElementById("neSeedShowInReport").checked = false;
+  document.getElementById("seedImgPreviewContainer").innerHTML = "";
+  window._seedImageDataUrl = null;
   // Reset transaction fields
   document.getElementById("neTxWalletDest").value = "";
   document.getElementById("neTxWalletOrigin").value = "";
@@ -2194,6 +2298,11 @@ function openNewEventModal() {
   document.getElementById("neTxFee").value = "";
   document.getElementById("neTxHash").value = "";
   document.getElementById("neTxExplorerUrl").value = "";
+  document.getElementById("txImgPreviewContainer").innerHTML = "";
+  window._txImageDataUrl = null;
+  // Reset other fields (NOTA / OUTRO)
+  document.getElementById("otherImgPreviewContainer").innerHTML = "";
+  window._otherImageDataUrl = null;
   // Reset recovery fields
   document.getElementById("neRecoveryDesc").value = "";
   document.getElementById("neRecoveryBrand").value = "";
@@ -2233,6 +2342,7 @@ function toggleSeedFields() {
   const deliveryFields = document.getElementById("deliveryFields");
   const locationFields = document.getElementById("locationFields");
   const signatureFields = document.getElementById("signatureFields");
+  const otherFields = document.getElementById("otherFields");
 
   seedFields.classList.remove("active");
   txFields.classList.remove("active");
@@ -2240,6 +2350,7 @@ function toggleSeedFields() {
   deliveryFields.classList.remove("active");
   locationFields.classList.remove("active");
   signatureFields.classList.remove("active");
+  otherFields.classList.remove("active");
 
   if (type === "SEED_REGISTRADA") {
     seedFields.classList.add("active");
@@ -2253,6 +2364,9 @@ function toggleSeedFields() {
     locationFields.classList.add("active");
   } else if (type === "ASSINATURA_RELATORIO") {
     signatureFields.classList.add("active");
+  } else {
+    // NOTA, OUTRO — mostra painel de imagem genérico
+    otherFields.classList.add("active");
   }
   toggleSeedValueField();
 }
@@ -2291,7 +2405,8 @@ async function handleCreateEvent() {
       sensitiveType,
       mode,
       nonSecretNotes: seedNotes || null,
-      showInReport: showInReport
+      showInReport: showInReport,
+      imageDataUrl: window._seedImageDataUrl || null
     };
 
     if (mode === "partial") {
@@ -2312,6 +2427,7 @@ async function handleCreateEvent() {
       fee: document.getElementById("neTxFee").value.trim() || null,
       txHash: document.getElementById("neTxHash").value.trim() || null,
       explorerUrl: document.getElementById("neTxExplorerUrl").value.trim() || null,
+      imageDataUrl: window._txImageDataUrl || null,
       notes: detail
     };
     detail = JSON.stringify(txDetail);
@@ -2362,8 +2478,17 @@ async function handleCreateEvent() {
       notes: detail
     };
 
-    const byPassphrase = document.getElementById("neDeliveryByPassphrase").value;
-    const toPassphrase = document.getElementById("neDeliveryToPassphrase").value;
+    const byPassphrase = document.getElementById("neDeliveryByPassphrase").value.trim();
+    const toPassphrase = document.getElementById("neDeliveryToPassphrase").value.trim();
+
+    if (byPassphrase && !/^\(\d{2}\)\d{9}$/.test(byPassphrase)) {
+      showToast("O telefone do entregador deve estar no formato (xx)xxxxxxxxx (13 caracteres).", "error");
+      return;
+    }
+    if (toPassphrase && !/^\(\d{2}\)\d{9}$/.test(toPassphrase)) {
+      showToast("O telefone do recebedor deve estar no formato (xx)xxxxxxxxx (13 caracteres).", "error");
+      return;
+    }
 
     if (byPassphrase) {
       const dataToSign = JSON.stringify({
@@ -2480,13 +2605,27 @@ async function handleCreateEvent() {
     detail = JSON.stringify(sigDetail);
   }
 
+  // Para NOTA e OUTRO: embute imagem no detail se houver
+  if ((type === "NOTA" || type === "OUTRO") && window._otherImageDataUrl) {
+    const otherDetail = { notes: detail, imageDataUrl: window._otherImageDataUrl };
+    detail = JSON.stringify(otherDetail);
+  }
+
   const evt = await createCustodyEvent(currentCaseId, type, summary, detail);
 
   if (!appState.eventsByCase[currentCaseId]) {
     appState.eventsByCase[currentCaseId] = [];
   }
   appState.eventsByCase[currentCaseId].push(evt);
-  saveStateToStorage();
+  await saveStateToDb();
+
+  // Limpar imagens temporárias
+  window._txImageDataUrl = null;
+  window._seedImageDataUrl = null;
+  window._otherImageDataUrl = null;
+  window._recoveryImageDataUrl = null;
+  window._deliveryImageDataUrl = null;
+  window._locationImageDataUrl = null;
 
   closeModal("modalNewEvent");
   await renderTimeline(currentCaseId);
@@ -2563,7 +2702,7 @@ function readFileAsDataURL(file) {
 async function addAttachmentToCase(caseId, file, originLabel) {
   const id = "att-" + Date.now().toString() + "-" + Math.floor(Math.random() * 1000);
   const now = new Date().toISOString();
-  const dataUrl = await readFileAsDataURL(file);
+  const dataUrl = await compressImageFile(file);  // comprime antes de armazenar
   const fileHash = await computeSha256Hex(dataUrl);
 
   const attachment = {
@@ -2592,7 +2731,7 @@ async function addAttachmentToCase(caseId, file, originLabel) {
   }
   appState.eventsByCase[caseId].push(evt);
 
-  saveStateToStorage();
+  await saveStateToDb();
   return attachment;
 }
 
@@ -2760,29 +2899,61 @@ function dataUrlToJpegBytes(dataUrl, maxW, maxH) {
   });
 }
 
+// Utility: Compress + resize an image File before storing (reduces MB to KB)
+async function compressImageFile(file, maxW = 1280, maxH = 960, quality = 0.82) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        let w = img.width;
+        let h = img.height;
+        if (w > maxW || h > maxH) {
+          const scale = Math.min(maxW / w, maxH / h);
+          w = Math.floor(w * scale);
+          h = Math.floor(h * scale);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 // Utility for recovery image selection
-function handleRecoveryImageSelect(event) {
+async function handleRecoveryImageSelect(event) {
   const file = event.target.files[0];
   if (!file) return;
   event.target.value = '';
   if (!file.type.startsWith('image/')) {
-    showToast('Apenas imagens s\u00e3o suportadas.', 'error');
+    showToast('Apenas imagens são suportadas.', 'error');
     return;
   }
   if (file.size > 10 * 1024 * 1024) {
-    showToast('Arquivo muito grande (m\u00e1x. 10 MB).', 'error');
+    showToast('Arquivo muito grande (máx. 10 MB).', 'error');
     return;
   }
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    window._recoveryImageDataUrl = e.target.result;
+  try {
+    const compressed = await compressImageFile(file);
+    window._recoveryImageDataUrl = compressed;
     document.getElementById('recoveryImgPreviewContainer').innerHTML = `
       <div class="recovery-img-preview-container">
-        <img src="${e.target.result}" class="recovery-img-preview" alt="Preview">
+        <img src="${compressed}" class="recovery-img-preview" alt="Preview">
         <button class="recovery-img-remove" onclick="removeRecoveryImage()" title="Remover">&times;</button>
       </div>`;
-  };
-  reader.readAsDataURL(file);
+  } catch(e) {
+    showToast('Erro ao processar imagem.', 'error');
+  }
 }
 
 function removeRecoveryImage() {
@@ -2791,7 +2962,7 @@ function removeRecoveryImage() {
 }
 
 // Utility for delivery image selection
-function handleDeliveryImageSelect(event) {
+async function handleDeliveryImageSelect(event) {
   const file = event.target.files[0];
   if (!file) return;
   event.target.value = '';
@@ -2803,16 +2974,17 @@ function handleDeliveryImageSelect(event) {
     showToast('Arquivo muito grande (máx. 10 MB).', 'error');
     return;
   }
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    window._deliveryImageDataUrl = e.target.result;
+  try {
+    const compressed = await compressImageFile(file);
+    window._deliveryImageDataUrl = compressed;
     document.getElementById('deliveryImgPreviewContainer').innerHTML = `
       <div class="delivery-img-preview-container">
-        <img src="${e.target.result}" class="delivery-img-preview" alt="Preview">
+        <img src="${compressed}" class="delivery-img-preview" alt="Preview">
         <button class="delivery-img-remove" onclick="removeDeliveryImage()" title="Remover">&times;</button>
       </div>`;
-  };
-  reader.readAsDataURL(file);
+  } catch(e) {
+    showToast('Erro ao processar imagem.', 'error');
+  }
 }
 
 function removeDeliveryImage() {
@@ -2821,7 +2993,7 @@ function removeDeliveryImage() {
 }
 
 // Utility for location image selection
-function handleLocationImageSelect(event) {
+async function handleLocationImageSelect(event) {
   const file = event.target.files[0];
   if (!file) return;
   event.target.value = '';
@@ -2833,21 +3005,88 @@ function handleLocationImageSelect(event) {
     showToast('Arquivo muito grande (máx. 10 MB).', 'error');
     return;
   }
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    window._locationImageDataUrl = e.target.result;
+  try {
+    const compressed = await compressImageFile(file);
+    window._locationImageDataUrl = compressed;
     document.getElementById('locationImgPreviewContainer').innerHTML = `
       <div class="location-img-preview-container">
-        <img src="${e.target.result}" class="location-img-preview" alt="Preview">
+        <img src="${compressed}" class="location-img-preview" alt="Preview">
         <button class="location-img-remove" onclick="removeLocationImage()" title="Remover">&times;</button>
       </div>`;
-  };
-  reader.readAsDataURL(file);
+  } catch(e) {
+    showToast('Erro ao processar imagem.', 'error');
+  }
 }
 
 function removeLocationImage() {
   window._locationImageDataUrl = null;
   document.getElementById('locationImgPreviewContainer').innerHTML = '';
+}
+
+// Utility for transaction image selection
+async function handleTxImageSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  event.target.value = '';
+  if (!file.type.startsWith('image/')) { showToast('Apenas imagens são suportadas.', 'error'); return; }
+  if (file.size > 10 * 1024 * 1024) { showToast('Arquivo muito grande (máx. 10 MB).', 'error'); return; }
+  try {
+    const compressed = await compressImageFile(file);
+    window._txImageDataUrl = compressed;
+    document.getElementById('txImgPreviewContainer').innerHTML = `
+      <div style="position:relative;display:inline-block;margin-top:8px;">
+        <img src="${compressed}" style="max-width:100%;max-height:160px;border-radius:var(--radius-sm);border:1px solid var(--border-primary);" alt="Preview">
+        <button onclick="removeTxImage()" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.6);color:#fff;border:none;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:0.9rem;line-height:1;">&times;</button>
+      </div>`;
+  } catch(e) { showToast('Erro ao processar imagem.', 'error'); }
+}
+function removeTxImage() {
+  window._txImageDataUrl = null;
+  document.getElementById('txImgPreviewContainer').innerHTML = '';
+}
+
+// Utility for seed/sensitive image selection
+async function handleSeedImageSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  event.target.value = '';
+  if (!file.type.startsWith('image/')) { showToast('Apenas imagens são suportadas.', 'error'); return; }
+  if (file.size > 10 * 1024 * 1024) { showToast('Arquivo muito grande (máx. 10 MB).', 'error'); return; }
+  try {
+    const compressed = await compressImageFile(file);
+    window._seedImageDataUrl = compressed;
+    document.getElementById('seedImgPreviewContainer').innerHTML = `
+      <div style="position:relative;display:inline-block;margin-top:8px;">
+        <img src="${compressed}" style="max-width:100%;max-height:160px;border-radius:var(--radius-sm);border:1px solid var(--border-primary);" alt="Preview">
+        <button onclick="removeSeedImage()" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.6);color:#fff;border:none;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:0.9rem;line-height:1;">&times;</button>
+      </div>`;
+  } catch(e) { showToast('Erro ao processar imagem.', 'error'); }
+}
+function removeSeedImage() {
+  window._seedImageDataUrl = null;
+  document.getElementById('seedImgPreviewContainer').innerHTML = '';
+}
+
+// Utility for generic (other/note) image selection
+async function handleOtherImageSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  event.target.value = '';
+  if (!file.type.startsWith('image/')) { showToast('Apenas imagens são suportadas.', 'error'); return; }
+  if (file.size > 10 * 1024 * 1024) { showToast('Arquivo muito grande (máx. 10 MB).', 'error'); return; }
+  try {
+    const compressed = await compressImageFile(file);
+    window._otherImageDataUrl = compressed;
+    document.getElementById('otherImgPreviewContainer').innerHTML = `
+      <div style="position:relative;display:inline-block;margin-top:8px;">
+        <img src="${compressed}" style="max-width:100%;max-height:160px;border-radius:var(--radius-sm);border:1px solid var(--border-primary);" alt="Preview">
+        <button onclick="removeOtherImage()" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.6);color:#fff;border:none;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:0.9rem;line-height:1;">&times;</button>
+      </div>`;
+  } catch(e) { showToast('Erro ao processar imagem.', 'error'); }
+}
+function removeOtherImage() {
+  window._otherImageDataUrl = null;
+  document.getElementById('otherImgPreviewContainer').innerHTML = '';
 }
 
 /* ========================================
@@ -2891,8 +3130,9 @@ async function generatePdf(caseObj, events, attachments) {
   const MARGIN_B = 60;
   const LINE_HEIGHT = 14;
   const MAX_TEXT_W = PAGE_W - MARGIN_L - MARGIN_R;
-  const IMG_MAX_W = MAX_TEXT_W;
-  const IMG_MAX_H = 300;
+  const IMG_MAX_W = 300;
+  const IMG_MAX_H = 160;
+  const IMG_MIN_SCALE = 0.60; // Minimum 60% of standard size before forcing new page
 
   // Pre-process institution logo if available
   let logoImgObj = null;
@@ -2956,6 +3196,48 @@ async function generatePdf(caseObj, events, attachments) {
         if (ld.imageDataUrl) {
           const imgData = await dataUrlToJpegBytes(ld.imageDataUrl, 500, 400);
           locationImages.push({ ...imgData, eventId: e.id, objId: null });
+        }
+      } catch (_) {}
+    }
+  }
+
+  // Also collect transaction (apreensão) event images
+  const txImages = [];
+  for (const e of events) {
+    if (e.type === 'TRANSACAO_APREENSAO' && e.detail) {
+      try {
+        const td = JSON.parse(e.detail);
+        if (td.imageDataUrl) {
+          const imgData = await dataUrlToJpegBytes(td.imageDataUrl, 500, 400);
+          txImages.push({ ...imgData, eventId: e.id, objId: null });
+        }
+      } catch (_) {}
+    }
+  }
+
+  // Also collect seed/sensitive event images
+  const seedImages = [];
+  for (const e of events) {
+    if (e.type === 'SEED_REGISTRADA' && e.detail) {
+      try {
+        const sd = JSON.parse(e.detail);
+        if (sd.imageDataUrl) {
+          const imgData = await dataUrlToJpegBytes(sd.imageDataUrl, 500, 400);
+          seedImages.push({ ...imgData, eventId: e.id, objId: null });
+        }
+      } catch (_) {}
+    }
+  }
+
+  // Also collect generic (NOTA/OUTRO) event images
+  const otherImages = [];
+  for (const e of events) {
+    if ((e.type === 'NOTA' || e.type === 'OUTRO') && e.detail) {
+      try {
+        const od = JSON.parse(e.detail);
+        if (od.imageDataUrl) {
+          const imgData = await dataUrlToJpegBytes(od.imageDataUrl, 500, 400);
+          otherImages.push({ ...imgData, eventId: e.id, objId: null });
         }
       } catch (_) {}
     }
@@ -3092,16 +3374,43 @@ async function generatePdf(caseObj, events, attachments) {
 
   // Place an image on the current page (imgObj has objId, width, height in pixels)
   function addImage(imgObj, imgName) {
-    // Scale to fit within content area
+    // Calculate standard dimensions (scaled to max limits)
     let w = imgObj.width;
     let h = imgObj.height;
     const scale = Math.min(IMG_MAX_W / w, IMG_MAX_H / h, 1);
-    w = Math.floor(w * scale);
-    h = Math.floor(h * scale);
-    ensureSpace(h + 10);
-    const imgY = curY - h;
-    // q ... cm ... Do Q  to place image
-    currentPage.push(`q ${w} 0 0 ${h} ${MARGIN_L} ${imgY.toFixed(2)} cm /${imgName} Do Q`);
+    const stdW = Math.floor(w * scale);
+    const stdH = Math.floor(h * scale);
+
+    const availableSpace = curY - MARGIN_B - 10;
+    let finalW = stdW;
+    let finalH = stdH;
+
+    if (stdH <= availableSpace) {
+      // Scenario A: fits at standard size — use as-is
+      finalW = stdW;
+      finalH = stdH;
+    } else {
+      // Calculate how much we'd need to shrink to fit current page
+      const fitScale = availableSpace / stdH;
+      if (fitScale >= IMG_MIN_SCALE) {
+        // Scenario B: shrink proportionally to fit (down to 60%)
+        finalW = Math.floor(stdW * fitScale);
+        finalH = Math.floor(stdH * fitScale);
+      } else {
+        // Scenario C: would need to shrink below 60% — force new page, use standard size
+        pages.push({ commands: currentPage, images: currentPageImages });
+        currentPage = [];
+        currentPageImages = [];
+        curY = PAGE_H - MARGIN_T;
+        finalW = stdW;
+        finalH = stdH;
+      }
+    }
+
+    // Center image horizontally within the text area
+    const imgX = MARGIN_L + (MAX_TEXT_W - finalW) / 2;
+    const imgY = curY - finalH;
+    currentPage.push(`q ${finalW} 0 0 ${finalH} ${imgX.toFixed(2)} ${imgY.toFixed(2)} cm /${imgName} Do Q`);
     currentPageImages.push({ imgName, imgObjId: imgObj.objId });
     curY = imgY - 6;
   }
@@ -3135,6 +3444,21 @@ async function generatePdf(caseObj, events, attachments) {
     const header = `<< /Type /XObject /Subtype /Image /Width ${img.width} /Height ${img.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${img.bytes.length} >>`;
     img.objId = addBinaryObj(header, img.bytes);
   }
+  for (let i = 0; i < txImages.length; i++) {
+    const img = txImages[i];
+    const header = `<< /Type /XObject /Subtype /Image /Width ${img.width} /Height ${img.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${img.bytes.length} >>`;
+    img.objId = addBinaryObj(header, img.bytes);
+  }
+  for (let i = 0; i < seedImages.length; i++) {
+    const img = seedImages[i];
+    const header = `<< /Type /XObject /Subtype /Image /Width ${img.width} /Height ${img.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${img.bytes.length} >>`;
+    img.objId = addBinaryObj(header, img.bytes);
+  }
+  for (let i = 0; i < otherImages.length; i++) {
+    const img = otherImages[i];
+    const header = `<< /Type /XObject /Subtype /Image /Width ${img.width} /Height ${img.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${img.bytes.length} >>`;
+    img.objId = addBinaryObj(header, img.bytes);
+  }
   if (logoImgObj) {
     const header = `<< /Type /XObject /Subtype /Image /Width ${logoImgObj.width} /Height ${logoImgObj.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${logoImgObj.bytes.length} >>`;
     logoImgObj.objId = addBinaryObj(header, logoImgObj.bytes);
@@ -3159,23 +3483,23 @@ async function generatePdf(caseObj, events, attachments) {
     textX = MARGIN_L + w + 15;
   }
 
-  let textY = headerStart - 5;
+  let textY = headerStart - 4;
   const darkGray = [0.15, 0.15, 0.2];
   const midGray = [0.4, 0.45, 0.5];
   const primaryAccent = [0.2, 0.25, 0.3];
 
   if (institutionConfig.name) {
-    textY = drawText(institutionConfig.name.toUpperCase(), textX, textY, 9, "bold", midGray) - 4;
+    textY = drawText(institutionConfig.name.toUpperCase(), textX, textY, 8.5, "bold", midGray) - 4;
   } else {
     textY = drawText("PROTOCOLO DE SEGURANÇA E AUDITORIA FORENSE", textX, textY, 8, "bold", midGray) - 4;
   }
 
-  textY = drawText("FENIX AUDIT LITE", textX, textY, 18, "bold", primaryAccent) - 4;
+  textY = drawText("FENIX AUDIT LITE", textX, textY, 18, "bold", primaryAccent) - 5;
   textY = drawText("Relatório de Integridade e Custódia de Evidências", textX, textY, 11, false, darkGray) - 4;
   textY = drawText("Algoritmo de Integridade: SHA-256 | Cadeia de Custódia Local", textX, textY, 7.5, "mono", midGray);
 
   const heightUsed = headerStart - Math.min(textY, headerStart - logoH);
-  curY = headerStart - heightUsed - 15;
+  curY = headerStart - heightUsed - 16;
 
   ensureSpace(5);
   currentPage.push(`${MARGIN_L} ${curY.toFixed(2)} m ${PAGE_W - MARGIN_R} ${curY.toFixed(2)} l 0.3 0.3 0.35 RG 1.5 w S`);
@@ -3222,6 +3546,11 @@ async function generatePdf(caseObj, events, attachments) {
         if (txd.fee) addText("    Taxa paga: " + txd.fee, 8, false, [0.45, 0.5, 0.6]);
         if (txd.txHash) addText("    Hash TX: " + txd.txHash, 8, false, [0.45, 0.5, 0.6]);
         if (txd.explorerUrl) addText("    Explorer: " + txd.explorerUrl, 8, false, [0.45, 0.5, 0.6]);
+        const txImg = txImages.find(ti => ti.eventId === e.id);
+        if (txImg) {
+          addText("    Imagem de evidência:", 8, false, [0.45, 0.5, 0.6]);
+          addImage(txImg, `TxImg_${e.id.replace(/[^a-zA-Z0-9]/g, '')}`);
+        }
       } catch (_) {
         addText("    [Dados da transação]", 8, false, [0.45, 0.5, 0.6]);
       }
@@ -3347,8 +3676,23 @@ async function generatePdf(caseObj, events, attachments) {
       }
     } else if (e.detail && e.type !== "SEED_REGISTRADA" && e.type !== "ENTREGA" && e.type !== "LOCALIZACAO_OBJETO" && e.type !== "ASSINATURA_RELATORIO") {
       let detailText = e.detail;
-      if (detailText.length > 300) detailText = detailText.substring(0, 300) + "...";
-      addText("    Detalhe: " + detailText, 8, false, [0.45, 0.5, 0.6]);
+      if (e.type === "NOTA" || e.type === "OUTRO") {
+        try {
+          const parsed = JSON.parse(e.detail);
+          detailText = parsed.notes || "";
+        } catch (_) {
+          // Mantém como texto puro se não for JSON válido (retrocompatibilidade)
+        }
+      }
+      if (detailText) {
+        if (detailText.length > 300) detailText = detailText.substring(0, 300) + "...";
+        addText("    Detalhe: " + detailText, 8, false, [0.45, 0.5, 0.6]);
+      }
+      const otherImg = otherImages.find(oi => oi.eventId === e.id);
+      if (otherImg) {
+        addText("    Imagem de evidência:", 8, false, [0.45, 0.5, 0.6]);
+        addImage(otherImg, `OtherImg_${e.id.replace(/[^a-zA-Z0-9]/g, '')}`);
+      }
     } else if (e.type === "SEED_REGISTRADA") {
       try {
         const sd = JSON.parse(e.detail);
@@ -3357,6 +3701,11 @@ async function generatePdf(caseObj, events, attachments) {
           addText(`    Valor/Seed: ${sd.valueFragment}`, 8, true, [0.2, 0.25, 0.3]);
         } else {
           addText("    [Valor não exibido no relatório]", 8, false, [0.75, 0.3, 0.3]);
+        }
+        const seedImg = seedImages.find(si => si.eventId === e.id);
+        if (seedImg) {
+          addText("    Imagem de evidência:", 8, false, [0.45, 0.5, 0.6]);
+          addImage(seedImg, `SeedImg_${e.id.replace(/[^a-zA-Z0-9]/g, '')}`);
         }
       } catch (_) {
         addText("    [Dados sensíveis -- não exibidos]", 8, false, [0.75, 0.3, 0.3]);
@@ -3492,352 +3841,3 @@ async function generatePdf(caseObj, events, attachments) {
             role: "receivedBy"
           });
           const verified = await verifyDigitalSignature(dataReceived, dd.signatureReceived.signatureHex, dd.signatureReceived.publicKeyJwk);
-          if (verified) {
-            yCol2 = drawText("[ASSINADO DIGITALMENTE]", col2X, yCol2, 9, "bold", [0.1, 0.5, 0.2], colW);
-            yCol2 = drawText(`Chave ID: ${dd.signatureReceived.keyHash.substring(0, 16)}...`, col2X, yCol2, 7.5, "mono", [0.3, 0.3, 0.3], colW);
-            yCol2 = drawText(`Assinatura: ${dd.signatureReceived.signatureHex.substring(0, 16)}...`, col2X, yCol2, 7.5, "mono", [0.3, 0.3, 0.3], colW);
-          } else {
-            yCol2 = drawText("[ASSINATURA INVÁLIDA]", col2X, yCol2, 9, "bold", [0.8, 0.1, 0.1], colW);
-          }
-        } else {
-          yCol2 = drawText("___________________________________", col2X, yCol2, 9, false, [0.4, 0.4, 0.4], colW);
-        }
-
-        curY = Math.min(yCol1, yCol2) - 10;
-        const nextY1 = drawText(`Entregue por: ${deliveredBy}`, col1X, curY, 8.5, "bold", [0.15, 0.15, 0.2], colW);
-        const nextY2 = drawText(`Recebido por: ${receivedBy}`, col2X, curY, 8.5, "bold", [0.15, 0.15, 0.2], colW);
-
-        curY = Math.min(nextY1, nextY2) - 15;
-      } catch (_) {}
-    }
-  }
-
-  addSpacer(12);
-  addLine();
-  addSpacer(6);
-
-  addText("Relatório gerado em: " + new Date().toLocaleString("pt-BR"), 8, false, [0.45, 0.5, 0.6]);
-  addText("Fênix Audit Lite v1.0 -- Protótipo forense local", 8, false, [0.45, 0.5, 0.6]);
-  addText("Algoritmo de integridade: SHA-256", 8, false, [0.45, 0.5, 0.6]);
-  if (institutionConfig.name) {
-    addText("Instituição: " + institutionConfig.name, 8, false, [0.45, 0.5, 0.6]);
-  }
-  addText("Este procedimento foi estruturado com base nos princípios da ABNT NBR ISO/IEC 27037", 8, false, [0.45, 0.5, 0.6]);
-
-  // Push last page
-  pages.push({ commands: currentPage, images: currentPageImages });
-
-  // ——— Assemble the PDF as binary ———
-
-  const catalogId = addObj("");
-  const pagesId = addObj("");
-  const font1Id = addObj("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");
-  const font2Id = addObj("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>");
-  const font3Id = addObj("<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding /WinAnsiEncoding >>");
-
-  const pageObjIds = [];
-  const streamObjIds = [];
-
-  for (const pageData of pages) {
-    const streamContent = pageData.commands.join("\n");
-    const streamBytes = new TextEncoder().encode(streamContent);
-    const streamId = addObj(`<< /Length ${streamBytes.length} >>\nstream\n${streamContent}\nendstream`);
-    streamObjIds.push(streamId);
-    const pageId = addObj("");
-    pageObjIds.push(pageId);
-  }
-
-  objects.find(o => o.id === catalogId).content = `<< /Type /Catalog /Pages ${pagesId} 0 R >>`;
-  objects.find(o => o.id === pagesId).content = `<< /Type /Pages /Kids [${pageObjIds.map(id => `${id} 0 R`).join(" ")}] /Count ${pageObjIds.length} >>`;
-
-  // Build page objects with image XObject references in Resources
-  for (let i = 0; i < pageObjIds.length; i++) {
-    const pageData = pages[i];
-    let xobjEntries = [];
-    if (pageData.images.length > 0) {
-      xobjEntries = pageData.images.map(im => `/${im.imgName} ${im.imgObjId} 0 R`);
-    }
-    if (logoImgObj) {
-      xobjEntries.push(`/InstitutionLogo ${logoImgObj.objId} 0 R`);
-    }
-    let xobjDict = '';
-    if (xobjEntries.length > 0) {
-      xobjDict = ` /XObject << ${xobjEntries.join(' ')} >>`;
-    }
-    objects.find(o => o.id === pageObjIds[i]).content = `<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 ${PAGE_W} ${PAGE_H}] /Contents ${streamObjIds[i]} 0 R /Resources << /Font << /F1 ${font1Id} 0 R /F2 ${font2Id} 0 R /F3 ${font3Id} 0 R >>${xobjDict} >> >>`;
-  }
-
-  // Build final binary PDF
-  const encoder = new TextEncoder();
-  const chunks = [];
-  let totalLen = 0;
-
-  function writeStr(s) {
-    const b = encoder.encode(s);
-    chunks.push(b);
-    totalLen += b.length;
-  }
-
-  function writeBytes(b) {
-    chunks.push(b);
-    totalLen += b.length;
-  }
-
-  writeStr("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n");
-  const offsets = [];
-
-  for (const obj of objects) {
-    offsets.push(totalLen);
-    if (obj.binaryStream) {
-      // Binary object (image)
-      writeStr(`${obj.id} 0 obj\n${obj.binaryStream.header}\nstream\n`);
-      writeBytes(obj.binaryStream.data);
-      writeStr(`\nendstream\nendobj\n`);
-    } else {
-      writeStr(`${obj.id} 0 obj\n${obj.content}\nendobj\n`);
-    }
-  }
-
-  const xrefOffset = totalLen;
-  writeStr("xref\n");
-  writeStr(`0 ${objects.length + 1}\n`);
-  writeStr("0000000000 65535 f \n");
-  for (const offset of offsets) {
-    writeStr(offset.toString().padStart(10, "0") + " 00000 n \n");
-  }
-
-  writeStr("trailer\n");
-  writeStr(`<< /Size ${objects.length + 1} /Root ${catalogId} 0 R >>\n`);
-  writeStr("startxref\n");
-  writeStr(xrefOffset + "\n");
-  writeStr("%%EOF\n");
-
-  // Concatenate all chunks into a single Uint8Array
-  const result = new Uint8Array(totalLen);
-  let pos = 0;
-  for (const chunk of chunks) {
-    result.set(chunk, pos);
-    pos += chunk.length;
-  }
-
-  return result;
-}
-
-/* ========================================
-   MODALS
-   ======================================== */
-
-function openModal(id) {
-  const el = document.getElementById(id);
-  if (el) el.classList.add("active");
-}
-
-function closeModal(id) {
-  const el = document.getElementById(id);
-  if (el) el.classList.remove("active");
-}
-
-// Close modals on overlay click
-document.addEventListener("click", function(e) {
-  if (e.target.classList.contains("modal-overlay")) {
-    e.target.classList.remove("active");
-  }
-});
-
-// Close modals on Escape
-document.addEventListener("keydown", function(e) {
-  if (e.key === "Escape") {
-    document.querySelectorAll(".modal-overlay.active").forEach(m => m.classList.remove("active"));
-    closeImagePreview();
-  }
-});
-
-/* ========================================
-   TOAST
-   ======================================== */
-
-function showToast(message, type) {
-  type = type || "info";
-  const container = document.getElementById("toastContainer");
-  const toast = document.createElement("div");
-  toast.className = "toast toast-" + type;
-  toast.textContent = message;
-  container.appendChild(toast);
-  setTimeout(() => {
-    if (toast.parentNode) toast.parentNode.removeChild(toast);
-  }, 3000);
-}
-
-/* ========================================
-   UTILITÁRIOS
-   ======================================== */
-
-function esc(str) {
-  if (!str) return "";
-  const div = document.createElement("div");
-  div.textContent = str;
-  return div.innerHTML;
-}
-
-function formatDate(isoStr) {
-  try {
-    const d = new Date(isoStr);
-    return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
-  } catch (_) {
-    return isoStr;
-  }
-}
-
-function formatDateTime(isoStr) {
-  try {
-    const d = new Date(isoStr);
-    return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }) + " " +
-           d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-  } catch (_) {
-    return isoStr;
-  }
-}
-
-function formatBytes(bytes) {
-  if (bytes === 0) return "0 B";
-  const k = 1024;
-  const sizes = ["B", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
-}
-
-function copyToClipboard(text) {
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(text).then(() => {
-      showToast("Hash copiado!", "info");
-    });
-  } else {
-    // Fallback
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand("copy");
-    document.body.removeChild(ta);
-    showToast("Hash copiado!", "info");
-  }
-}
-
-/* ========================================
-   INICIALIZAÇÃO
-   ======================================== */
-
-/* ========================================
-   INSTITUTION CONFIG
-   ======================================== */
-
-function updateAppHeaders() {
-  const logoList = document.getElementById("headerLogoList");
-  const logoDetail = document.getElementById("headerLogoDetail");
-  const subtitleList = document.getElementById("headerSubtitleList");
-  const subtitleDetail = document.getElementById("headerSubtitleDetail");
-
-  if (institutionConfig.logoDataUrl) {
-    const imgHtml = `<img src="${institutionConfig.logoDataUrl}" style="width:100%;height:100%;object-fit:contain;">`;
-    if (logoList) logoList.innerHTML = imgHtml;
-    if (logoDetail) logoDetail.innerHTML = imgHtml;
-  } else {
-    if (logoList) logoList.innerHTML = "🔥";
-    if (logoDetail) logoDetail.innerHTML = "🔥";
-  }
-
-  if (institutionConfig.name) {
-    if (subtitleList) subtitleList.textContent = institutionConfig.name;
-    if (subtitleDetail) subtitleDetail.textContent = institutionConfig.name;
-  } else {
-    if (subtitleList) subtitleList.textContent = "Registro forense local";
-    if (subtitleDetail) subtitleDetail.textContent = "Registro forense local";
-  }
-}
-
-function loadInstitutionConfig() {
-  try {
-    const raw = localStorage.getItem(INSTITUTION_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      institutionConfig = {
-        name: parsed.name || "",
-        logoDataUrl: parsed.logoDataUrl || null
-      };
-    }
-    updateAppHeaders();
-  } catch (e) {
-    console.error("Erro ao carregar config da instituicao:", e);
-  }
-}
-
-function saveInstitutionConfig() {
-  institutionConfig.name = document.getElementById("institutionName").value.trim();
-  try {
-    localStorage.setItem(INSTITUTION_KEY, JSON.stringify(institutionConfig));
-    updateAppHeaders();
-    showToast("Configuracao da instituicao salva!", "success");
-  } catch (e) {
-    console.error("Erro ao salvar config:", e);
-    showToast("Erro ao salvar configuracao.", "error");
-  }
-}
-
-function handleLogoUpload(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  event.target.value = "";
-
-  if (!file.type.match(/^image\/(png|jpeg|svg\+xml)$/)) {
-    showToast("Formato invalido. Use PNG, JPG ou SVG.", "error");
-    return;
-  }
-
-  if (file.size > 500 * 1024) {
-    showToast("Arquivo muito grande (max. 500 KB).", "error");
-    return;
-  }
-
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    institutionConfig.logoDataUrl = e.target.result;
-    renderLogoPreview();
-    saveInstitutionConfig();
-    showToast("Brasao carregado!", "success");
-  };
-  reader.readAsDataURL(file);
-}
-
-function removeLogo() {
-  institutionConfig.logoDataUrl = null;
-  renderLogoPreview();
-  saveInstitutionConfig();
-  showToast("Logo removido.", "info");
-}
-
-function renderLogoPreview() {
-  const preview = document.getElementById("logoPreview");
-  const actions = document.getElementById("logoActions");
-  if (institutionConfig.logoDataUrl) {
-    preview.innerHTML = `<img src="${institutionConfig.logoDataUrl}" alt="Brasao">`;
-    actions.style.display = "flex";
-  } else {
-    preview.innerHTML = "\ud83c\udfdb";
-    actions.style.display = "none";
-  }
-}
-
-function renderInstitutionConfig() {
-  document.getElementById("institutionName").value = institutionConfig.name || "";
-  renderLogoPreview();
-}
-
-window.onload = function() {
-  appState = loadStateFromStorage();
-  loadInstitutionConfig();
-  renderUnlockScreen();
-};
-
-</script>
-</body>
-</html>
