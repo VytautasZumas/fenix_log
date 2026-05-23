@@ -2,7 +2,7 @@
   "name": "Fênix Log",
   "short_name": "Fênix Log",
   "description": "Registro de integridade e custódia de evidências forenses.",
-  "start_url": "./fnix-audit-lite.html",
+  "start_url": "./",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#0a0c10",

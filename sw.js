@@ -1,6 +1,7 @@
 const CACHE_NAME = 'fenix-log-v1';
 const ASSETS = [
-  './fnix-audit-lite.html',
+  './',
+  './index.html',
   './manifest.json',
   './icon.svg'
 ];
