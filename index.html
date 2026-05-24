@@ -3736,18 +3736,26 @@ function downloadFile(filename, content, mimeType) {
 }
 
 // Utility: Convert a data URL image to JPEG bytes via canvas
-function dataUrlToJpegBytes(dataUrl, maxW, maxH) {
+function dataUrlToJpegBytes(dataUrl, maxW, maxH, quality = 0.85) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
-      let w = img.width;
-      let h = img.height;
-      // Scale down if needed
-      if (w > maxW || h > maxH) {
+      let w = img.width || 300;
+      let h = img.height || 150;
+      
+      const isSvg = dataUrl && dataUrl.startsWith("data:image/svg+xml");
+      if (isSvg) {
+        // For SVG vector files, scale UP to the target box dimensions to rasterize at maximum sharpness
+        const scale = Math.min(maxW / w, maxH / h);
+        w = Math.floor(w * scale);
+        h = Math.floor(h * scale);
+      } else if (w > maxW || h > maxH) {
+        // For raster images, scale down only if they exceed the maximum dimensions
         const scale = Math.min(maxW / w, maxH / h);
         w = Math.floor(w * scale);
         h = Math.floor(h * scale);
       }
+      
       const canvas = document.createElement('canvas');
       canvas.width = w;
       canvas.height = h;
@@ -3755,7 +3763,7 @@ function dataUrlToJpegBytes(dataUrl, maxW, maxH) {
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, w, h);
       ctx.drawImage(img, 0, 0, w, h);
-      const jpegDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      const jpegDataUrl = canvas.toDataURL('image/jpeg', quality);
       const base64 = jpegDataUrl.split(',')[1];
       const binary = atob(base64);
       const bytes = new Uint8Array(binary.length);
@@ -4008,7 +4016,7 @@ async function generatePdf(caseObj, events, attachments) {
   let logoImgObj = null;
   if (institutionConfig.logoDataUrl) {
     try {
-      logoImgObj = await dataUrlToJpegBytes(institutionConfig.logoDataUrl, 100, 100);
+      logoImgObj = await dataUrlToJpegBytes(institutionConfig.logoDataUrl, 1000, 1000, 0.95);
     } catch (e) {
       console.warn('Could not convert institution logo for PDF:', e);
     }
