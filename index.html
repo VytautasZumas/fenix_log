@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="Fênix Log">
 <link rel="apple-touch-icon" href="icon.svg">
 <link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
 <script src="pdf-lib.min.js"></script>
 <script src="jszip.min.js"></script>
 <title>Fênix Log</title>
@@ -272,17 +273,16 @@ a { color: var(--accent-amber); text-decoration: none; }
 .unlock-logo {
   width: 80px; height: 80px;
   display: flex; align-items: center; justify-content: center;
-  background: linear-gradient(135deg, var(--accent-amber), var(--accent-amber-dim));
-  border-radius: var(--radius-xl);
-  font-size: 2.8rem;
   margin-bottom: 20px;
-  box-shadow: 0 8px 40px var(--accent-amber-glow);
+  box-shadow: 0 8px 40px rgba(139, 92, 246, 0.25);
   animation: glow-pulse 3s ease-in-out infinite;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
 }
 
 @keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 8px 40px var(--accent-amber-glow); }
-  50% { box-shadow: 0 8px 60px rgba(184,194,211,0.35); }
+  0%, 100% { box-shadow: 0 8px 40px rgba(139, 92, 246, 0.2); }
+  50% { box-shadow: 0 8px 60px rgba(34, 211, 238, 0.4); }
 }
 
 .unlock-title {
@@ -1109,7 +1109,7 @@ a { color: var(--accent-amber); text-decoration: none; }
 <!-- ========== SEÇÃO: DESBLOQUEIO ========== -->
 <div id="sectionUnlock" class="section active">
   <div class="unlock-screen">
-    <div class="unlock-logo">🔥</div>
+    <div class="unlock-logo"><img src="icon.svg" style="width:100%;height:100%;object-fit:contain;"></div>
     <h1 class="unlock-title">Fênix Log</h1>
     <p class="unlock-desc">Aplicação local para registro forense de criptoativos. Todos os dados ficam armazenados apenas neste navegador.</p>
     <div class="unlock-form">
@@ -1147,7 +1147,7 @@ a { color: var(--accent-amber); text-decoration: none; }
   <div class="app-container">
     <div class="header">
       <div class="header-brand">
-        <div class="header-logo" id="headerLogoList">🔥</div>
+        <div class="header-logo" id="headerLogoList"><img src="icon.svg" style="width:100%;height:100%;object-fit:contain;"></div>
         <div>
           <div class="header-title" id="headerTitleList">Fênix Log</div>
           <div class="header-subtitle" id="headerSubtitleList">Registro forense local</div>
@@ -1201,7 +1201,7 @@ a { color: var(--accent-amber); text-decoration: none; }
   <div class="app-container">
     <div class="header">
       <div class="header-brand">
-        <div class="header-logo" id="headerLogoDetail">🔥</div>
+        <div class="header-logo" id="headerLogoDetail"><img src="icon.svg" style="width:100%;height:100%;object-fit:contain;"></div>
         <div>
           <div class="header-title" id="headerTitleDetail">Fênix Log</div>
           <div class="header-subtitle" id="headerSubtitleDetail">Registro forense local</div>
@@ -1738,11 +1738,22 @@ async function loadStateFromDb() {
         if (!rec) {
           resolve({ pinHash: null, cases: [], eventsByCase: {}, attachmentsByCase: {} });
         } else {
+          const attachmentsByCase = rec.attachmentsByCase || {};
+          // Limpa dataBlob corrompidos (não Blobs/Files) das sessões anteriores
+          for (const caseId in attachmentsByCase) {
+            if (Array.isArray(attachmentsByCase[caseId])) {
+              for (const att of attachmentsByCase[caseId]) {
+                if (att.dataBlob && !(att.dataBlob instanceof Blob)) {
+                  att.dataBlob = null;
+                }
+              }
+            }
+          }
           resolve({
             pinHash: rec.pinHash || null,
             cases: Array.isArray(rec.cases) ? rec.cases : [],
             eventsByCase: rec.eventsByCase || {},
-            attachmentsByCase: rec.attachmentsByCase || {}
+            attachmentsByCase: attachmentsByCase
           });
         }
       };
@@ -2298,12 +2309,34 @@ function countSignaturesInEvents(events) {
   return total;
 }
 
+async function dataUrlToBlob(dataUrl) {
+  const res = await fetch(dataUrl);
+  return await res.blob();
+}
+
 async function executeCaseImport(data, option) {
   showToast("Verificando integridade do caso importado...", "info");
   try {
     const importedCase = { ...data.case };
     let importedEvents = Array.isArray(data.events) ? [...data.events] : [];
     let importedAttachments = Array.isArray(data.attachments) ? [...data.attachments] : [];
+    
+    // Reconstituir dataBlob a partir de dataBlobBase64 e sanitizar
+    for (const att of importedAttachments) {
+      if (att.dataBlobBase64) {
+        try {
+          const blob = await dataUrlToBlob(att.dataBlobBase64);
+          att.dataBlob = new File([blob], att.fileName, { type: att.mimeType });
+          delete att.dataBlobBase64;
+        } catch (err) {
+          console.error("Erro ao reconstituir dataBlob do anexo:", att.fileName, err);
+          att.dataBlob = null;
+        }
+      } else if (att.dataBlob && !(att.dataBlob instanceof Blob)) {
+        // Remove objetos planos {} ou strings inválidas de importações antigas
+        att.dataBlob = null;
+      }
+    }
     
     // ── 1. Verificar integridade da cadeia ANTES de aceitar ──
     const chainResult = await verifyChainIntegrityFromArray(importedEvents);
@@ -3822,9 +3855,11 @@ function handleAttachmentClick(attId) {
   if (att.role === "registro" || (att.role === "evidencia" && att.mimeType.startsWith("image/") && att.dataBase64)) {
     document.getElementById("imgPreviewImg").src = att.dataBase64;
     document.getElementById("imgPreviewOverlay").classList.add("active");
-  } else if (att.dataBlob) {
+  } else if (att.dataBlob && att.dataBlob instanceof Blob) {
     downloadFile(att.fileName, att.dataBlob, att.mimeType);
     showToast(`Baixando evidência: ${att.fileName}`, "info");
+  } else {
+    showToast("O arquivo original desta evidência não está disponível localmente.", "warning");
   }
 }
 
@@ -3883,29 +3918,51 @@ function renderExportSection(caseId) {
   `;
 }
 
-function exportCaseAsJson(caseId) {
+async function exportCaseAsJson(caseId) {
   const c = getCaseById(caseId);
   if (!c) return null;
   const events = getEventsForCase(caseId);
   const attachments = getAttachmentsForCase(caseId);
+
+  const serializedAttachments = [];
+  for (const att of attachments) {
+    const attCopy = { ...att };
+    if (attCopy.dataBlob instanceof Blob) {
+      try {
+        attCopy.dataBlobBase64 = await readFileAsDataURL(attCopy.dataBlob);
+      } catch (err) {
+        console.error("Erro ao converter dataBlob para Base64 ao exportar:", attCopy.fileName, err);
+      }
+    }
+    // Removemos dataBlob da cópia para que não seja serializado como {}
+    delete attCopy.dataBlob;
+    serializedAttachments.push(attCopy);
+  }
+
   const exportObj = {
     version: "1.0",
     application: "Fênix Log",
     exportedAt: new Date().toISOString(),
     case: c,
     events,
-    attachments
+    attachments: serializedAttachments
   };
   return JSON.stringify(exportObj, null, 2);
 }
 
-function handleExportJson() {
-  const json = exportCaseAsJson(currentCaseId);
-  if (!json) return;
-  const c = getCaseById(currentCaseId);
-  const safeName = c.caseNumber.replace(/[^a-zA-Z0-9]/g, "_");
-  downloadFile(`fnix-log-${safeName}.json`, json, "application/json");
-  showToast("JSON exportado!", "success");
+async function handleExportJson() {
+  showToast("Preparando exportação JSON...", "info");
+  try {
+    const json = await exportCaseAsJson(currentCaseId);
+    if (!json) return;
+    const c = getCaseById(currentCaseId);
+    const safeName = c.caseNumber.replace(/[^a-zA-Z0-9]/g, "_");
+    downloadFile(`fnix-log-${safeName}.json`, json, "application/json");
+    showToast("JSON exportado com sucesso!", "success");
+  } catch (e) {
+    console.error("Erro ao gerar JSON do caso:", e);
+    showToast("Erro ao exportar JSON do caso.", "error");
+  }
 }
 
 function downloadFile(filename, content, mimeType) {
@@ -4208,11 +4265,25 @@ async function handleExportZip() {
 
     const folderEvidencias = zip.folder("evidencias");
 
+    let hasSkippedFiles = false;
     for (const att of attachments) {
-      if (att.role === "evidencia" && att.dataBlob) {
-        const arrayBuffer = await att.dataBlob.arrayBuffer();
-        folderEvidencias.file(att.fileName, new Uint8Array(arrayBuffer));
+      if (att.role === "evidencia") {
+        if (att.dataBlob && att.dataBlob instanceof Blob) {
+          try {
+            const arrayBuffer = await att.dataBlob.arrayBuffer();
+            folderEvidencias.file(att.fileName, new Uint8Array(arrayBuffer));
+          } catch (err) {
+            console.error(`Erro ao ler conteúdo binário de ${att.fileName}:`, err);
+            hasSkippedFiles = true;
+          }
+        } else {
+          hasSkippedFiles = true;
+        }
       }
+    }
+    
+    if (hasSkippedFiles) {
+      showToast("Aviso: Alguns arquivos binários não estavam disponíveis localmente e foram omitidos.", "warning");
     }
 
     const zipBlob = await zip.generateAsync({ type: "blob" });
@@ -4770,7 +4841,7 @@ async function generatePdf(caseObj, events, attachments) {
 
   // Embed non-image evidence files inside the PDF portfolio structure
   for (const att of attachments) {
-    if (att.role === "evidencia" && att.dataBlob) {
+    if (att.role === "evidencia" && att.dataBlob && att.dataBlob instanceof Blob) {
       try {
         const arrayBuffer = await att.dataBlob.arrayBuffer();
         const fileBytes = new Uint8Array(arrayBuffer);
@@ -4788,7 +4859,7 @@ async function generatePdf(caseObj, events, attachments) {
 
   // Merge pages of attached PDF evidence files to the end of the report document
   for (const att of attachments) {
-    if (att.role === "evidencia" && att.mimeType === "application/pdf" && att.dataBlob) {
+    if (att.role === "evidencia" && att.mimeType === "application/pdf" && att.dataBlob && att.dataBlob instanceof Blob) {
       try {
         const arrayBuffer = await att.dataBlob.arrayBuffer();
         const attachedPdf = await PDFDocument.load(new Uint8Array(arrayBuffer));
@@ -4934,8 +5005,8 @@ function updateAppHeaders() {
     if (logoList) logoList.innerHTML = imgHtml;
     if (logoDetail) logoDetail.innerHTML = imgHtml;
   } else {
-    if (logoList) logoList.innerHTML = "🔥";
-    if (logoDetail) logoDetail.innerHTML = "🔥";
+    if (logoList) logoList.innerHTML = `<img src="icon.svg" style="width:100%;height:100%;object-fit:contain;">`;
+    if (logoDetail) logoDetail.innerHTML = `<img src="icon.svg" style="width:100%;height:100%;object-fit:contain;">`;
   }
 
   if (institutionConfig.name) {
