@@ -1807,6 +1807,14 @@ a { color: var(--accent-amber); text-decoration: none; }
         <label class="form-label">Medida sugerida / providência</label>
         <textarea id="trSuggestedMeasure" class="form-textarea" placeholder="Ex: bloqueio, requisição à VASP, sequestro de ativos..."></textarea>
       </div>
+
+      <hr style="border:none;border-top:1px solid var(--border-primary);margin:16px 0;">
+      <h4 style="font-size:0.9rem;color:var(--accent-green);margin-bottom:12px;">✍️ Assinatura Digital do Analista (opcional)</h4>
+      <div class="form-group">
+        <label class="form-label">Assinatura Digital - Telefone do Analista (opcional)</label>
+        <input id="trAnalystPassphrase" type="text" class="form-input" placeholder="Formato: (xx)xxxxxxxxx" maxlength="13" oninput="this.value = formatPhoneInput(this.value)">
+        <p class="form-hint">O número de telefone é usado como chave para gerar a assinatura criptográfica. Não é armazenado.</p>
+      </div>
     </div>
 
     <div class="modal-actions">
@@ -3359,6 +3367,25 @@ async function renderTimeline(caseId) {
               <div><strong>Ativo principal:</strong> ${esc(tr.mainAsset || '—')}</div>
               <div><strong>Etapas:</strong> ${steps.length} &nbsp;|&nbsp; <strong>Imagens:</strong> ${imgCount}</div>
               <div><strong>Período analisado:</strong> ${periodo}</div>
+              ${await (async () => {
+                if (!tr.signature) return '';
+                const sigCaseId = e.originalCaseId || e.caseId;
+                const dataToVerify = JSON.stringify({
+                  caseId: sigCaseId,
+                  type: "RELATORIO_RASTREIO",
+                  reportTitle: tr.reportTitle,
+                  analyst: tr.analyst,
+                  procedureNumber: tr.procedureNumber
+                });
+                const verified = await verifyDigitalSignature(dataToVerify, tr.signature.signatureHex, tr.signature.publicKeyJwk);
+                const keyHash = tr.signature.keyHash || "—";
+                const importedLabel = e.originalCaseId ? ' <span style="font-size:0.7rem;opacity:0.7;">[importada]</span>' : '';
+                if (verified) {
+                  return `<div style="display:inline-flex;align-items:center;gap:4px;color:var(--accent-green);font-size:0.8rem;margin-top:6px;background:rgba(16,185,129,0.1);padding:4px 8px;border-radius:4px;">🔒 Assinatura digital válida (Analista ID: <span style="font-family:var(--font-mono);font-size:0.75rem;">${esc(keyHash.substring(0,8))}...</span>)${importedLabel}</div>`;
+                } else {
+                  return `<div style="display:inline-flex;align-items:center;gap:4px;color:var(--accent-red);font-size:0.8rem;margin-top:6px;background:rgba(239,68,68,0.1);padding:4px 8px;border-radius:4px;">⚠️ Assinatura digital INVÁLIDA</div>`;
+                }
+              })()}
               <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
                 <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();viewTraceSummary('${esc(e.id)}')">👁 Visualizar resumo</button>
                 ${i === events.length - 1
@@ -3492,6 +3519,8 @@ function openNewEventModal() {
   // Reset trace report fields
   window._traceReportData = createEmptyTraceReportData();
   window._traceActiveStepId = null;
+  const trPassEl = document.getElementById("trAnalystPassphrase");
+  if (trPassEl) trPassEl.value = "";
   populateTraceReportForm(window._traceReportData);
   toggleSeedFields();
   openModal("modalNewEvent");
@@ -3580,6 +3609,32 @@ async function handleCreateEvent() {
       showToast("Adicione ao menos uma etapa ao fluxo transacional.", "error");
       return;
     }
+    // Assinatura digital do analista (opcional)
+    const trPassphrase = document.getElementById("trAnalystPassphrase").value.trim();
+    if (trPassphrase) {
+      if (!/^\(\d{2}\)\d{9}$/.test(trPassphrase)) {
+        showToast("O telefone do analista deve estar no formato (xx)xxxxxxxxx (13 caracteres).", "error");
+        return;
+      }
+      const dataToSign = JSON.stringify({
+        caseId: currentCaseId,
+        type: "RELATORIO_RASTREIO",
+        reportTitle: data.reportTitle,
+        analyst: data.analyst,
+        procedureNumber: data.procedureNumber
+      });
+      showToast("Gerando assinatura digital...", "info");
+      try {
+        const signaturePayload = await generateDigitalSignature(trPassphrase, dataToSign);
+        signaturePayload.keyHash = await getPublicKeyHash(signaturePayload.publicKeyJwk);
+        data.signature = signaturePayload;
+      } catch (e) {
+        console.error("Erro na assinatura do analista:", e);
+        showToast("Erro ao gerar assinatura digital.", "error");
+        return;
+      }
+    }
+
     const trSummary = data.reportTitle;
     const trDetail = JSON.stringify(data);
 
@@ -3615,6 +3670,7 @@ async function handleCreateEvent() {
       window._editingTraceEventId = null;
       window._traceReportData = createEmptyTraceReportData();
       window._traceActiveStepId = null;
+      document.getElementById("trAnalystPassphrase").value = "";
       closeModal("modalNewEvent");
       await renderTimeline(currentCaseId);
       showToast("Relatório de rastreio atualizado!", "success");
@@ -3627,6 +3683,7 @@ async function handleCreateEvent() {
     await saveStateToDb();
     window._traceReportData = createEmptyTraceReportData();
     window._traceActiveStepId = null;
+    document.getElementById("trAnalystPassphrase").value = "";
     closeModal("modalNewEvent");
     await renderTimeline(currentCaseId);
     showToast("Relatório de rastreio registrado!", "success");
@@ -5197,6 +5254,7 @@ function editTraceReport(eventId) {
   document.getElementById("neSubmitBtn").textContent = "Salvar alterações";
   document.getElementById("neSummary").value = "";
   document.getElementById("neDetail").value = "";
+  document.getElementById("trAnalystPassphrase").value = "";
 
   populateTraceReportForm(data);
   toggleSeedFields();
@@ -5504,6 +5562,23 @@ async function generateTraceReportPdf(eventId) {
     addText("_______________________________________", 10, false);
     addText(data.analyst || "Analista responsável", 9.5, "bold");
     if (data.unit) addText(data.unit, 8.5, false, [0.4,0.45,0.55]);
+    if (data.signature) {
+      const sigCaseId = evt.originalCaseId || evt.caseId;
+      const dataToVerify = JSON.stringify({
+        caseId: sigCaseId,
+        type: "RELATORIO_RASTREIO",
+        reportTitle: data.reportTitle,
+        analyst: data.analyst,
+        procedureNumber: data.procedureNumber
+      });
+      try {
+        const verified = await verifyDigitalSignature(dataToVerify, data.signature.signatureHex, data.signature.publicKeyJwk);
+        const status = verified ? "VÁLIDA" : "INVÁLIDA";
+        const impTag = evt.originalCaseId ? " [importada]" : "";
+        const kh = (data.signature.keyHash || "").substring(0, 16);
+        addText(`Assinatura Digital: [${status}]${impTag} Chave ID: ${kh}...`, 7.5, "mono", verified ? [0.1,0.5,0.2] : [0.8,0.1,0.1]);
+      } catch (_) {}
+    }
     addText("Documento gerado localmente em " + formatDateTime(new Date().toISOString()), 7.5, false, [0.5,0.5,0.6]);
 
     const bytes = await pdfDoc.save();
