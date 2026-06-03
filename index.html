@@ -5365,7 +5365,7 @@ async function generateTraceReportPdf(eventId) {
         let w = imgData.width, h = imgData.height;
         const scale = Math.min(260 / w, 140 / h, 1);
         w = Math.floor(w * scale); h = Math.floor(h * scale);
-        ensureSpace(h + 15);
+        ensure(h + 15);
         page.drawImage(embedded, { x: ML + 20, y: curY - h, width: w, height: h });
         curY -= (h + 4);
         if (caption) addText(caption, 8, false, [0.45,0.5,0.6]);
@@ -6511,6 +6511,11 @@ function closeModal(id) {
 // Close modals on overlay click
 document.addEventListener("click", function(e) {
   if (e.target.classList.contains("modal-overlay")) {
+    // Bloqueia fechamento do modal de evento quando for RELATORIO_RASTREIO
+    if (e.target.id === "modalNewEvent") {
+      const type = document.getElementById("neType").value;
+      if (type === "RELATORIO_RASTREIO") return;
+    }
     e.target.classList.remove("active");
   }
 });
@@ -6518,6 +6523,12 @@ document.addEventListener("click", function(e) {
 // Close modals on Escape
 document.addEventListener("keydown", function(e) {
   if (e.key === "Escape") {
+    // Bloqueia Escape no modal de evento quando for RELATORIO_RASTREIO
+    const newEventModal = document.getElementById("modalNewEvent");
+    if (newEventModal && newEventModal.classList.contains("active")) {
+      const type = document.getElementById("neType").value;
+      if (type === "RELATORIO_RASTREIO") return;
+    }
     document.querySelectorAll(".modal-overlay.active").forEach(m => m.classList.remove("active"));
     closeImagePreview();
   }
