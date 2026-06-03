@@ -5344,23 +5344,64 @@ async function generateTraceReportPdf(eventId) {
       for (const r of rows) drawRow(r, false, false);
     }
 
-    // ---------- Cabeçalho institucional ----------
+    // ---------- Cabeçalho institucional (mesmo layout do relatório principal) ----------
+    const _darkGray  = [0.15, 0.15, 0.2];
+    const _midGray   = [0.4,  0.45, 0.5];
+    const _accent    = [0.2,  0.25, 0.3];
+
+    function _drawText(text, x, y, size, style, color) {
+      text = cleanTextForPdf(String(text == null ? "" : text));
+      const f = style === "bold" ? fontB : style === "mono" ? fontM : fontN;
+      const c = color || [0.1,0.1,0.14];
+      // wrap dentro da margem direita
+      const maxW = PAGE_W - x - MR;
+      const lines = wrap(text, size, f, maxW);
+      let cy = y;
+      for (const ln of lines) {
+        page.drawText(ln, { x, y: cy, size, font: f, color: rgb(c[0],c[1],c[2]) });
+        cy -= (size + 4);
+      }
+      return cy;
+    }
+
     let textX = ML;
+    let logoH = 0;
     if (institutionConfig.logoDataUrl) {
       try {
-        const logo = await dataUrlToJpegBytes(institutionConfig.logoDataUrl, 300, 300, 0.95);
-        const emb = await pdfDoc.embedJpg(logo.bytes);
-        let w = logo.width, h = logo.height;
-        const s = Math.min(55/w, 55/h, 1); w = Math.floor(w*s); h = Math.floor(h*s);
-        page.drawImage(emb, { x: ML, y: curY - h, width: w, height: h });
-        textX = ML + w + 15;
-      } catch (e) { console.warn("logo:", e); }
+        const logoImgObj = await dataUrlToJpegBytes(institutionConfig.logoDataUrl, 300, 300, 0.95);
+        if (logoImgObj && logoImgObj.bytes) {
+          const embeddedLogo = await pdfDoc.embedJpg(logoImgObj.bytes);
+          let lw = logoImgObj.width, lh = logoImgObj.height;
+          const ls = Math.min(55 / lw, 55 / lh, 1);
+          lw = Math.floor(lw * ls); lh = Math.floor(lh * ls);
+          logoH = lh;
+          ensure(lh + 10);
+          page.drawImage(embeddedLogo, { x: ML, y: curY - lh, width: lw, height: lh });
+          textX = ML + lw + 15;
+        }
+      } catch (e) { console.warn("logo rastreio:", e); }
     }
-    page.drawText(cleanTextForPdf((institutionConfig.name || "FÊNIX AUDIT").toUpperCase()), { x: textX, y: curY - 12, size: 11, font: fontB, color: rgb(0.2,0.25,0.3) });
-    page.drawText("Relatório de Rastreio de Transações", { x: textX, y: curY - 28, size: 9, font: fontN, color: rgb(0.3,0.3,0.4) });
-    curY -= 48;
+
+    const y1 = curY - 2;
+    const y2 = y1 - 8.5 - 11;
+    const y3 = y2 - 18 * 0.85;
+    const y4 = y3 - 10 - 1;
+
+    if (institutionConfig.name) {
+      _drawText(institutionConfig.name.toUpperCase(), textX, y1, 8.5, "bold", _midGray);
+    } else {
+      _drawText("PROTOCOLO DE SEGURANÇA E AUDITORIA FORENSE", textX, y1, 8.5, "bold", _midGray);
+    }
+    _drawText("FENIX LOG", textX, y2, 18, "bold", _accent);
+    _drawText("Relatório de Rastreio de Transações", textX, y3, 10, false, _darkGray);
+    _drawText("Algoritmo de Integridade: SHA-256 | Cadeia de Custódia Local", textX, y4, 7, "mono", _midGray);
+
+    const heightUsed = curY - Math.min(y4 - 2, curY - logoH);
+    curY = curY - heightUsed - 10;
+
+    ensure(5);
     page.drawLine({ start:{x:ML,y:curY}, end:{x:PAGE_W-MR,y:curY}, thickness:1.5, color:rgb(0.3,0.3,0.35) });
-    curY -= 14;
+    curY -= 12;
 
     // ---------- Título ----------
     addText(data.reportTitle || "Relatório de Rastreio de Transações", 15, "bold", [0.15,0.15,0.2]);
