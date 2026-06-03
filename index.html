@@ -802,6 +802,94 @@ a { color: var(--accent-amber); text-decoration: none; }
 .other-fields { display: none; }
 .other-fields.active { display: block; }
 
+/* ——— TRACE REPORT FIELDS (RELATORIO_RASTREIO) ——— */
+
+.trace-fields { display: none; }
+.trace-fields.active { display: block; }
+
+.trace-step-card {
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  margin-bottom: 14px;
+  background: var(--bg-input, rgba(0,0,0,0.15));
+}
+.trace-step-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.trace-step-card-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--accent-amber, #f59e0b);
+}
+.trace-paste-zone {
+  border: 2px dashed var(--border-primary);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  margin-top: 6px;
+}
+.trace-paste-zone:focus,
+.trace-paste-zone.dragover {
+  outline: none;
+  border-color: var(--accent-blue, #3b82f6);
+  background: rgba(59,130,246,0.08);
+}
+.trace-img-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+.trace-img-thumb {
+  position: relative;
+  width: 140px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  padding: 6px;
+  background: var(--bg-card, rgba(0,0,0,0.2));
+}
+.trace-img-thumb.is-main {
+  border-color: var(--accent-green, #10b981);
+  box-shadow: 0 0 0 1px var(--accent-green, #10b981);
+}
+.trace-img-thumb img {
+  width: 100%;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.trace-img-thumb input {
+  width: 100%;
+  font-size: 0.72rem;
+  margin-top: 4px;
+  padding: 2px 4px;
+}
+.trace-img-thumb-actions {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+.trace-img-thumb-actions button {
+  font-size: 0.68rem;
+  padding: 2px 5px;
+  border-radius: 3px;
+  cursor: pointer;
+  border: 1px solid var(--border-primary);
+  background: transparent;
+  color: var(--text-secondary);
+}
+.trace-img-thumb-actions button:hover { color: var(--text-primary); }
+
 .recovery-img-preview {
   max-width: 100%;
   max-height: 200px;
@@ -1372,6 +1460,7 @@ a { color: var(--accent-amber); text-decoration: none; }
         <option value="ENTREGA">Entrega / Repasse</option>
         <option value="LOCALIZACAO_OBJETO">Localização de Objeto</option>
         <option value="ASSINATURA_RELATORIO">Assinatura do Relatório</option>
+        <option value="RELATORIO_RASTREIO">Relatório de Rastreio de Transações</option>
       </select>
     </div>
     <div class="form-group">
@@ -1620,6 +1709,103 @@ a { color: var(--accent-amber); text-decoration: none; }
         </div>
         <input type="file" id="otherImageInput" accept="image/*" style="display:none;" onchange="handleOtherImageSelect(event)">
         <div id="otherImgPreviewContainer"></div>
+      </div>
+    </div>
+
+    <!-- Campos extras RELATORIO_RASTREIO -->
+    <div id="traceReportFields" class="trace-fields">
+      <hr style="border:none;border-top:1px solid var(--border-primary);margin:16px 0;">
+      <h4 style="font-size:0.9rem;color:var(--accent-amber, #f59e0b);margin-bottom:12px;">🧭 Relatório de Rastreio de Transações</h4>
+
+      <div class="form-group">
+        <label class="form-label">Título do relatório *</label>
+        <input id="trReportTitle" class="form-input" placeholder="Ex: Rastreio de fluxo de BTC — Operação X">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Objetivo da análise</label>
+        <textarea id="trObjective" class="form-textarea" placeholder="Objetivo da análise..."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Número do procedimento / caso</label>
+          <input id="trProcedureNumber" class="form-input" placeholder="Opcional">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Unidade responsável</label>
+          <input id="trUnit" class="form-input" placeholder="Opcional">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Analista responsável</label>
+          <input id="trAnalyst" class="form-input" placeholder="Opcional">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Autoridade demandante</label>
+          <input id="trAuthority" class="form-input" placeholder="Opcional">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Rede principal analisada</label>
+          <select id="trMainNetwork" class="form-select">
+            <option value="">Selecione</option>
+            <option>Bitcoin</option>
+            <option>Ethereum</option>
+            <option>Tron</option>
+            <option>BSC</option>
+            <option>Polygon</option>
+            <option>Arbitrum</option>
+            <option>Optimism</option>
+            <option>Base</option>
+            <option>Solana</option>
+            <option>Outra</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ativo principal</label>
+          <input id="trMainAsset" class="form-input" placeholder="Ex: BTC, ETH, USDT, USDC">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Período inicial analisado</label>
+          <input id="trPeriodStart" type="date" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Período final analisado</label>
+          <input id="trPeriodEnd" type="date" class="form-input">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ferramentas utilizadas</label>
+        <input id="trTools" class="form-input" placeholder="Ex: Reactor, TRM, Chainalysis, Etherscan, Tronscan...">
+        <p class="form-hint">Texto livre, separado por vírgulas.</p>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Metodologia</label>
+        <textarea id="trMethodology" class="form-textarea" placeholder="Descrição da metodologia empregada..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Síntese inicial do fluxo</label>
+        <textarea id="trInitialSummary" class="form-textarea" placeholder="Resumo introdutório do fluxo transacional..."></textarea>
+      </div>
+
+      <hr style="border:none;border-top:1px dashed var(--border-primary);margin:16px 0;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <h4 style="font-size:0.88rem;color:var(--text-primary);margin:0;">Etapas do fluxo transacional</h4>
+        <button class="btn btn-secondary btn-sm" type="button" onclick="addTraceStep()">➕ Adicionar etapa</button>
+      </div>
+      <div id="traceStepsContainer"></div>
+
+      <hr style="border:none;border-top:1px dashed var(--border-primary);margin:16px 0;">
+      <div class="form-group">
+        <label class="form-label">Conclusão técnica</label>
+        <textarea id="trTechnicalConclusion" class="form-textarea" placeholder="Conclusão técnica da análise..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Medida sugerida / providência</label>
+        <textarea id="trSuggestedMeasure" class="form-textarea" placeholder="Ex: bloqueio, requisição à VASP, sequestro de ativos..."></textarea>
       </div>
     </div>
 
@@ -1926,6 +2112,7 @@ function eventTypeLabelPdf(type) {
     "ENTREGA": "Entrega / Repasse",
     "LOCALIZACAO_OBJETO": "Localização de Objeto",
     "ASSINATURA_RELATORIO": "Assinatura do Relatório",
+    "RELATORIO_RASTREIO": "Relatório de Rastreio de Transações",
     "OUTRO": "Outro"
   };
   return map[type] || type;
@@ -3156,6 +3343,31 @@ async function renderTimeline(caseId) {
         } catch (_) {
           detailHtml = `<div class="timeline-detail">${esc(e.detail)}</div>`;
         }
+      } else if (e.type === "RELATORIO_RASTREIO") {
+        try {
+          const tr = JSON.parse(e.detail);
+          const steps = Array.isArray(tr.steps) ? tr.steps : [];
+          let imgCount = 0;
+          steps.forEach(s => { imgCount += (s.images ? s.images.length : 0); });
+          const periodo = (tr.periodStart || tr.periodEnd)
+            ? `${esc(tr.periodStart || '—')} a ${esc(tr.periodEnd || '—')}` : '—';
+          detailHtml = `
+            <div class="timeline-detail" style="border-left-color:var(--accent-amber, #f59e0b);">
+              <div><strong>Tipo:</strong> Relatório de Rastreio de Transações</div>
+              <div><strong>Título:</strong> ${esc(tr.reportTitle || '—')}</div>
+              <div><strong>Rede principal:</strong> ${esc(tr.mainNetwork || '—')}</div>
+              <div><strong>Ativo principal:</strong> ${esc(tr.mainAsset || '—')}</div>
+              <div><strong>Etapas:</strong> ${steps.length} &nbsp;|&nbsp; <strong>Imagens:</strong> ${imgCount}</div>
+              <div><strong>Período analisado:</strong> ${periodo}</div>
+              <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();viewTraceSummary('${esc(e.id)}')">👁 Visualizar resumo</button>
+                <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();generateTraceReportPdf('${esc(e.id)}')">📄 Gerar PDF</button>
+                <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();generateTraceReportDocx('${esc(e.id)}')">📝 Gerar DOCX</button>
+              </div>
+            </div>`;
+        } catch (_) {
+          detailHtml = `<div class="timeline-detail">${esc(e.detail)}</div>`;
+        }
       } else if (e.type === "NOTA" || e.type === "OUTRO") {
         try {
           const parsed = JSON.parse(e.detail);
@@ -3209,6 +3421,7 @@ function eventTypeLabel(type) {
     "ENTREGA": "📦 Entrega / Repasse",
     "LOCALIZACAO_OBJETO": "🔍 Localização de Objeto",
     "ASSINATURA_RELATORIO": "✍️ Assinatura do Relatório",
+    "RELATORIO_RASTREIO": "🧭 Relatório de Rastreio de Transações",
     "OUTRO": "📌 Outro"
   };
   return map[type] || type;
@@ -3268,6 +3481,10 @@ function openNewEventModal() {
   document.getElementById("neSignatureName").value = "";
   document.getElementById("neSignatureRole").value = "";
   document.getElementById("neSignaturePassphrase").value = "";
+  // Reset trace report fields
+  window._traceReportData = createEmptyTraceReportData();
+  window._traceActiveStepId = null;
+  populateTraceReportForm(window._traceReportData);
   toggleSeedFields();
   openModal("modalNewEvent");
 }
@@ -3281,6 +3498,7 @@ function toggleSeedFields() {
   const locationFields = document.getElementById("locationFields");
   const signatureFields = document.getElementById("signatureFields");
   const otherFields = document.getElementById("otherFields");
+  const traceFields = document.getElementById("traceReportFields");
 
   seedFields.classList.remove("active");
   txFields.classList.remove("active");
@@ -3289,6 +3507,24 @@ function toggleSeedFields() {
   locationFields.classList.remove("active");
   signatureFields.classList.remove("active");
   otherFields.classList.remove("active");
+  traceFields.classList.remove("active");
+
+  // O Relatório de Rastreio gerencia seu próprio resumo/detalhes
+  const summaryGroup = document.getElementById("neSummary").closest(".form-group");
+  const detailGroup = document.getElementById("neDetail").closest(".form-group");
+  if (type === "RELATORIO_RASTREIO") {
+    if (summaryGroup) summaryGroup.style.display = "none";
+    if (detailGroup) detailGroup.style.display = "none";
+  } else {
+    if (summaryGroup) summaryGroup.style.display = "";
+    if (detailGroup) detailGroup.style.display = "";
+  }
+
+  if (type === "RELATORIO_RASTREIO") {
+    traceFields.classList.add("active");
+    toggleSeedValueField();
+    return;
+  }
 
   if (type === "SEED_REGISTRADA") {
     seedFields.classList.add("active");
@@ -3324,6 +3560,32 @@ function toggleSeedValueField() {
 
 async function handleCreateEvent() {
   const type = document.getElementById("neType").value;
+
+  // ===== RELATÓRIO DE RASTREIO DE TRANSAÇÕES =====
+  if (type === "RELATORIO_RASTREIO") {
+    const data = collectTraceReportDataFromForm();
+    if (!data.reportTitle) {
+      showToast("Informe o título do relatório de rastreio.", "error");
+      return;
+    }
+    if (!data.steps || data.steps.length === 0) {
+      showToast("Adicione ao menos uma etapa ao fluxo transacional.", "error");
+      return;
+    }
+    const trSummary = data.reportTitle;
+    const trDetail = JSON.stringify(data);
+    const evt = await createCustodyEvent(currentCaseId, type, trSummary, trDetail);
+    if (!appState.eventsByCase[currentCaseId]) appState.eventsByCase[currentCaseId] = [];
+    appState.eventsByCase[currentCaseId].push(evt);
+    await saveStateToDb();
+    window._traceReportData = createEmptyTraceReportData();
+    window._traceActiveStepId = null;
+    closeModal("modalNewEvent");
+    await renderTimeline(currentCaseId);
+    showToast("Relatório de rastreio registrado!", "success");
+    return;
+  }
+
   const summary = document.getElementById("neSummary").value.trim();
   if (!summary) {
     showToast("Preencha o resumo do evento.", "error");
@@ -4429,6 +4691,942 @@ async function handleOtherImageSelect(event) {
 function removeOtherImage() {
   window._otherImageDataUrl = null;
   document.getElementById('otherImgPreviewContainer').innerHTML = '';
+}
+
+/* ========================================
+   RELATÓRIO DE RASTREIO DE TRANSAÇÕES
+   (evento RELATORIO_RASTREIO)
+   100% local — sem servidor, sem APIs externas
+   ======================================== */
+
+function getEventById(eventId) {
+  for (const caseId in appState.eventsByCase) {
+    const found = (appState.eventsByCase[caseId] || []).find(e => e.id === eventId);
+    if (found) return found;
+  }
+  return null;
+}
+
+function createEmptyTraceReportData() {
+  return {
+    reportTitle: "",
+    objective: "",
+    procedureNumber: "",
+    unit: "",
+    analyst: "",
+    authority: "",
+    mainNetwork: "",
+    mainAsset: "",
+    periodStart: "",
+    periodEnd: "",
+    tools: "",
+    methodology: "",
+    initialSummary: "",
+    technicalConclusion: "",
+    suggestedMeasure: "",
+    steps: []
+  };
+}
+
+// Abrevia endereços/TXIDs preservando início e fim
+function shortenIdentifier(value, startLength = 8, endLength = 4) {
+  if (!value) return "";
+  const v = String(value).trim();
+  if (v.length <= startLength + endLength + 3) return v;
+  return v.substring(0, startLength) + "..." + v.substring(v.length - endLength);
+}
+
+// Wrapper solicitado nas especificações
+function toggleTraceReportFields() {
+  toggleSeedFields();
+}
+
+// Garante objeto de trabalho em memória
+function ensureTraceData() {
+  if (!window._traceReportData) window._traceReportData = createEmptyTraceReportData();
+  if (!Array.isArray(window._traceReportData.steps)) window._traceReportData.steps = [];
+  return window._traceReportData;
+}
+
+function addTraceStep() {
+  const data = ensureTraceData();
+  syncTraceStepsFromDom();
+  const id = "step-" + Date.now() + "-" + Math.floor(Math.random() * 1000);
+  data.steps.push({
+    id,
+    order: data.steps.length + 1,
+    title: "",
+    dateUtc: "",
+    timeUtc: "",
+    localDateTime: "",
+    network: "",
+    asset: "",
+    amountCrypto: "",
+    amountFiat: "",
+    originLabel: "",
+    originAddress: "",
+    destinationLabel: "",
+    destinationAddress: "",
+    txid: "",
+    explorerUrl: "",
+    verificationTool: "",
+    destinationAttribution: "",
+    confidence: "",
+    classification: "",
+    technicalNote: "",
+    images: []
+  });
+  window._traceActiveStepId = id;
+  renderTraceSteps();
+}
+
+function removeTraceStep(stepId) {
+  const data = ensureTraceData();
+  syncTraceStepsFromDom();
+  data.steps = data.steps.filter(s => s.id !== stepId);
+  data.steps.forEach((s, i) => { s.order = i + 1; });
+  renderTraceSteps();
+}
+
+const TRACE_ATTRIBUTIONS = ["VASP", "Carteira não custodiada", "Bridge", "Mixer", "Swap", "Cluster", "Endereço da vítima", "Endereço do investigado", "Desconhecido"];
+const TRACE_CONFIDENCE = [["alto","Alto"],["medio","Médio"],["baixo","Baixo"],["nao_informado","Não informado"]];
+const TRACE_CLASSIFICATIONS = ["Recebimento", "Consolidação", "Transferência intermediária", "Dispersão", "Fracionamento", "Depósito em VASP", "Swap", "Bridge", "Saque", "Bloqueio", "Outro"];
+const TRACE_IMG_SOURCES = ["Reactor", "TRM", "Chainalysis", "Breadcrumbs", "Arkham", "Etherscan", "Tronscan", "Blockchain.com", "Blockchair", "Outro"];
+const TRACE_NETWORKS = ["Bitcoin", "Ethereum", "Tron", "BSC", "Polygon", "Arbitrum", "Optimism", "Base", "Solana", "Outra"];
+
+function _opt(value, label, selected) {
+  return `<option value="${esc(value)}"${value === selected ? " selected" : ""}>${esc(label)}</option>`;
+}
+
+function renderTraceSteps() {
+  const container = document.getElementById("traceStepsContainer");
+  if (!container) return;
+  const data = ensureTraceData();
+  if (data.steps.length === 0) {
+    container.innerHTML = `<p class="form-hint" style="text-align:center;padding:10px;">Nenhuma etapa adicionada. Clique em “Adicionar etapa”.</p>`;
+    return;
+  }
+  let html = "";
+  data.steps.forEach((s) => {
+    const p = "trStep_" + s.id + "_";
+    const netOpts = `<option value="">Selecione</option>` + TRACE_NETWORKS.map(n => _opt(n, n, s.network)).join("");
+    const attrOpts = `<option value="">Selecione</option>` + TRACE_ATTRIBUTIONS.map(a => _opt(a, a, s.destinationAttribution)).join("");
+    const confOpts = `<option value="">Selecione</option>` + TRACE_CONFIDENCE.map(c => _opt(c[0], c[1], s.confidence)).join("");
+    const classOpts = `<option value="">Selecione</option>` + TRACE_CLASSIFICATIONS.map(c => _opt(c, c, s.classification)).join("");
+
+    let thumbs = "";
+    (s.images || []).forEach(img => {
+      const srcOpts = `<option value="">Fonte</option>` + TRACE_IMG_SOURCES.map(o => _opt(o, o, img.imageSource)).join("");
+      thumbs += `
+        <div class="trace-img-thumb${img.isMain ? ' is-main' : ''}">
+          <img src="${img.dataUrl}" alt="${esc(img.name || '')}" onclick="document.getElementById('imgPreviewImg').src='${img.dataUrl}';document.getElementById('imgPreviewOverlay').classList.add('active');">
+          <input type="text" placeholder="Legenda" value="${esc(img.caption || '')}" onchange="updateTraceImage('${s.id}','${img.id}','caption',this.value)">
+          <select class="form-select" style="font-size:0.7rem;padding:2px;margin-top:4px;" onchange="updateTraceImage('${s.id}','${img.id}','imageSource',this.value)">${srcOpts}</select>
+          <div class="trace-img-thumb-actions">
+            <button type="button" onclick="setMainTraceImage('${s.id}','${img.id}')" title="Marcar como principal">${img.isMain ? '★' : '☆'}</button>
+            <button type="button" onclick="moveTraceImage('${s.id}','${img.id}',-1)" title="Subir">↑</button>
+            <button type="button" onclick="moveTraceImage('${s.id}','${img.id}',1)" title="Descer">↓</button>
+            <button type="button" onclick="removeTraceImage('${s.id}','${img.id}')" title="Remover">🗑</button>
+          </div>
+        </div>`;
+    });
+
+    html += `
+      <div class="trace-step-card" data-step-id="${s.id}">
+        <div class="trace-step-card-header">
+          <span class="trace-step-card-title">Etapa ${s.order}</span>
+          <button class="btn btn-danger btn-sm" type="button" onclick="removeTraceStep('${s.id}')">Remover etapa</button>
+        </div>
+        <div class="form-group"><label class="form-label">Título curto da etapa</label>
+          <input id="${p}title" class="form-input" value="${esc(s.title || '')}" placeholder="Ex: Recebimento inicial"></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Data UTC</label><input id="${p}dateUtc" type="date" class="form-input" value="${esc(s.dateUtc || '')}"></div>
+          <div class="form-group"><label class="form-label">Hora UTC</label><input id="${p}timeUtc" type="time" class="form-input" value="${esc(s.timeUtc || '')}"></div>
+          <div class="form-group"><label class="form-label">Data/hora local (opcional)</label><input id="${p}localDateTime" class="form-input" value="${esc(s.localDateTime || '')}"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Rede</label><select id="${p}network" class="form-select">${netOpts}</select></div>
+          <div class="form-group"><label class="form-label">Ativo</label><input id="${p}asset" class="form-input" value="${esc(s.asset || '')}" placeholder="Ex: BTC"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Valor em criptoativo</label><input id="${p}amountCrypto" class="form-input" value="${esc(s.amountCrypto || '')}" placeholder="Ex: 1.5"></div>
+          <div class="form-group"><label class="form-label">Valor estimado em fiat (opcional)</label><input id="${p}amountFiat" class="form-input" value="${esc(s.amountFiat || '')}" placeholder="Ex: R$ 500.000"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Origem (rótulo/entidade)</label><input id="${p}originLabel" class="form-input" value="${esc(s.originLabel || '')}"></div>
+          <div class="form-group"><label class="form-label">Destino (rótulo/entidade)</label><input id="${p}destinationLabel" class="form-input" value="${esc(s.destinationLabel || '')}"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Endereço de origem (completo)</label><input id="${p}originAddress" class="form-input" style="font-family:var(--font-mono);font-size:0.82rem;" value="${esc(s.originAddress || '')}"></div>
+        <div class="form-group"><label class="form-label">Endereço de destino (completo)</label><input id="${p}destinationAddress" class="form-input" style="font-family:var(--font-mono);font-size:0.82rem;" value="${esc(s.destinationAddress || '')}"></div>
+        <div class="form-group"><label class="form-label">TXID (completo)</label><input id="${p}txid" class="form-input" style="font-family:var(--font-mono);font-size:0.82rem;" value="${esc(s.txid || '')}"></div>
+        <div class="form-group"><label class="form-label">Link do explorador</label><input id="${p}explorerUrl" class="form-input" value="${esc(s.explorerUrl || '')}"></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Ferramenta de verificação</label><input id="${p}verificationTool" class="form-input" value="${esc(s.verificationTool || '')}"></div>
+          <div class="form-group"><label class="form-label">Atribuição do destino</label><select id="${p}destinationAttribution" class="form-select">${attrOpts}</select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Grau de confiança</label><select id="${p}confidence" class="form-select">${confOpts}</select></div>
+          <div class="form-group"><label class="form-label">Classificação da etapa</label><select id="${p}classification" class="form-select">${classOpts}</select></div>
+        </div>
+        <div class="form-group"><label class="form-label">Observação técnica</label><textarea id="${p}technicalNote" class="form-textarea">${esc(s.technicalNote || '')}</textarea></div>
+        <div class="form-group">
+          <label class="form-label">Imagens da etapa</label>
+          <input type="file" accept="image/*" multiple style="display:none;" id="${p}fileInput" onchange="handleTraceImageUpload('${s.id}', event)">
+          <div class="trace-paste-zone" tabindex="0"
+               onclick="document.getElementById('${p}fileInput').click()"
+               onpaste="handleTracePaste('${s.id}', event)"
+               ondragover="event.preventDefault();this.classList.add('dragover');"
+               ondragleave="this.classList.remove('dragover');"
+               ondrop="handleTraceDrop('${s.id}', event)">
+            Cole aqui o print, arraste uma imagem ou clique para enviar.
+          </div>
+          <div class="trace-img-thumbs">${thumbs}</div>
+        </div>
+      </div>`;
+  });
+  container.innerHTML = html;
+}
+
+// Lê os valores digitados nos cards (DOM) de volta para o objeto em memória
+function syncTraceStepsFromDom() {
+  const data = ensureTraceData();
+  const fields = ["title","dateUtc","timeUtc","localDateTime","network","asset","amountCrypto","amountFiat","originLabel","destinationLabel","originAddress","destinationAddress","txid","explorerUrl","verificationTool","destinationAttribution","confidence","classification","technicalNote"];
+  data.steps.forEach(s => {
+    const p = "trStep_" + s.id + "_";
+    fields.forEach(f => {
+      const el = document.getElementById(p + f);
+      if (el) s[f] = el.value;
+    });
+  });
+}
+
+function collectTraceReportDataFromForm() {
+  const data = ensureTraceData();
+  syncTraceStepsFromDom();
+  data.reportTitle = document.getElementById("trReportTitle").value.trim();
+  data.objective = document.getElementById("trObjective").value.trim();
+  data.procedureNumber = document.getElementById("trProcedureNumber").value.trim();
+  data.unit = document.getElementById("trUnit").value.trim();
+  data.analyst = document.getElementById("trAnalyst").value.trim();
+  data.authority = document.getElementById("trAuthority").value.trim();
+  data.mainNetwork = document.getElementById("trMainNetwork").value;
+  data.mainAsset = document.getElementById("trMainAsset").value.trim();
+  data.periodStart = document.getElementById("trPeriodStart").value;
+  data.periodEnd = document.getElementById("trPeriodEnd").value;
+  data.tools = document.getElementById("trTools").value.trim();
+  data.methodology = document.getElementById("trMethodology").value.trim();
+  data.initialSummary = document.getElementById("trInitialSummary").value.trim();
+  data.technicalConclusion = document.getElementById("trTechnicalConclusion").value.trim();
+  data.suggestedMeasure = document.getElementById("trSuggestedMeasure").value.trim();
+  data.steps.forEach((s, i) => { s.order = i + 1; });
+  return data;
+}
+
+function populateTraceReportForm(data) {
+  data = data || createEmptyTraceReportData();
+  window._traceReportData = data;
+  const setv = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ""; };
+  setv("trReportTitle", data.reportTitle);
+  setv("trObjective", data.objective);
+  setv("trProcedureNumber", data.procedureNumber);
+  setv("trUnit", data.unit);
+  setv("trAnalyst", data.analyst);
+  setv("trAuthority", data.authority);
+  setv("trMainNetwork", data.mainNetwork);
+  setv("trMainAsset", data.mainAsset);
+  setv("trPeriodStart", data.periodStart);
+  setv("trPeriodEnd", data.periodEnd);
+  setv("trTools", data.tools);
+  setv("trMethodology", data.methodology);
+  setv("trInitialSummary", data.initialSummary);
+  setv("trTechnicalConclusion", data.technicalConclusion);
+  setv("trSuggestedMeasure", data.suggestedMeasure);
+  renderTraceSteps();
+}
+
+// ===== Imagens das etapas =====
+
+function compressImage(file, maxWidth = 1600, quality = 0.85) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > maxWidth) { const scale = maxWidth / w; w = Math.round(w * scale); h = Math.round(h * scale); }
+        const canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        // Mantém PNG quando há transparência relevante seria ideal; aqui padronizamos JPEG para legibilidade/tamanho
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve({ dataUrl: canvas.toDataURL("image/jpeg", quality), width: w, height: h });
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function addImageToTraceStep(stepId, imageObject) {
+  const data = ensureTraceData();
+  syncTraceStepsFromDom();
+  const step = data.steps.find(s => s.id === stepId);
+  if (!step) return;
+  if (!step.images) step.images = [];
+  if (step.images.length === 0) imageObject.isMain = true;
+  step.images.push(imageObject);
+  renderTraceSteps();
+}
+
+async function _processTraceFile(stepId, file, source) {
+  if (!file || !file.type || !file.type.startsWith("image/")) {
+    showToast("Apenas imagens são suportadas.", "error");
+    return;
+  }
+  try {
+    const compressed = await compressImage(file, 1600, 0.85);
+    addImageToTraceStep(stepId, {
+      id: "img-" + Date.now() + "-" + Math.floor(Math.random() * 1000),
+      name: file.name || ("print-" + Date.now() + ".jpg"),
+      source: source,
+      createdAt: new Date().toISOString(),
+      caption: "",
+      imageSource: "",
+      isMain: false,
+      dataUrl: compressed.dataUrl
+    });
+  } catch (e) {
+    console.error("Erro ao processar imagem da etapa:", e);
+    showToast("Erro ao processar imagem.", "error");
+  }
+}
+
+async function handleTraceImageUpload(stepId, event) {
+  const files = Array.from(event.target.files || []);
+  event.target.value = "";
+  for (const f of files) await _processTraceFile(stepId, f, "upload");
+}
+
+async function handleTracePaste(stepId, event) {
+  const items = (event.clipboardData || window.clipboardData)?.items;
+  if (!items) return;
+  for (const item of items) {
+    if (item.type && item.type.startsWith("image/")) {
+      event.preventDefault();
+      const blob = item.getAsFile();
+      if (blob) await _processTraceFile(stepId, blob, "clipboard");
+    }
+  }
+}
+
+async function handleTraceDrop(stepId, event) {
+  event.preventDefault();
+  event.stopPropagation();
+  const zone = event.currentTarget;
+  if (zone && zone.classList) zone.classList.remove("dragover");
+  const files = Array.from(event.dataTransfer?.files || []);
+  for (const f of files) await _processTraceFile(stepId, f, "drag_drop");
+}
+
+function removeTraceImage(stepId, imageId) {
+  const data = ensureTraceData();
+  syncTraceStepsFromDom();
+  const step = data.steps.find(s => s.id === stepId);
+  if (!step) return;
+  const wasMain = (step.images.find(i => i.id === imageId) || {}).isMain;
+  step.images = step.images.filter(i => i.id !== imageId);
+  if (wasMain && step.images.length > 0) step.images[0].isMain = true;
+  renderTraceSteps();
+}
+
+function moveTraceImage(stepId, imageId, dir) {
+  const data = ensureTraceData();
+  syncTraceStepsFromDom();
+  const step = data.steps.find(s => s.id === stepId);
+  if (!step) return;
+  const idx = step.images.findIndex(i => i.id === imageId);
+  const ni = idx + dir;
+  if (idx < 0 || ni < 0 || ni >= step.images.length) return;
+  const tmp = step.images[idx];
+  step.images[idx] = step.images[ni];
+  step.images[ni] = tmp;
+  renderTraceSteps();
+}
+
+function setMainTraceImage(stepId, imageId) {
+  const data = ensureTraceData();
+  syncTraceStepsFromDom();
+  const step = data.steps.find(s => s.id === stepId);
+  if (!step) return;
+  step.images.forEach(i => { i.isMain = (i.id === imageId); });
+  renderTraceSteps();
+}
+
+function updateTraceImage(stepId, imageId, field, value) {
+  const data = ensureTraceData();
+  const step = data.steps.find(s => s.id === stepId);
+  if (!step) return;
+  const img = step.images.find(i => i.id === imageId);
+  if (img) img[field] = value;
+}
+
+// ===== Narrativa automática =====
+
+function generateTraceNarrative(step) {
+  const ni = "não informado";
+  const dateUtc = step.dateUtc || ni;
+  const timeUtc = step.timeUtc || ni;
+  const amount = step.amountCrypto || ni;
+  const asset = step.asset || "";
+  const network = step.network || ni;
+  const origin = step.originLabel || ni;
+  const dest = step.destinationLabel || ni;
+  const classif = step.classification || ni;
+  let text = `Na data de ${dateUtc}, às ${timeUtc} UTC, foi identificada movimentação de ${amount} ${asset} na rede ${network}, com origem em ${origin} e destino em ${dest}.`;
+  if (step.txid) {
+    text += ` A transação foi registrada sob o TXID ${shortenIdentifier(step.txid, 8, 4)} e classificada como ${classif}.`;
+  } else {
+    text += ` A etapa foi classificada como ${classif}.`;
+  }
+  return text;
+}
+
+// ===== Visualização rápida do resumo =====
+
+function viewTraceSummary(eventId) {
+  const evt = getEventById(eventId);
+  if (!evt) return;
+  let data;
+  try { data = JSON.parse(evt.detail); } catch (_) { showToast("Dados do relatório inválidos.", "error"); return; }
+  const lines = [];
+  lines.push("RELATÓRIO DE RASTREIO DE TRANSAÇÕES");
+  lines.push("Título: " + (data.reportTitle || "—"));
+  lines.push("Rede principal: " + (data.mainNetwork || "—") + " | Ativo: " + (data.mainAsset || "—"));
+  lines.push("Período: " + (data.periodStart || "—") + " a " + (data.periodEnd || "—"));
+  lines.push("Etapas: " + (data.steps ? data.steps.length : 0));
+  (data.steps || []).forEach(s => {
+    lines.push(`\nEtapa ${s.order} — ${s.title || "(sem título)"}`);
+    lines.push("  " + generateTraceNarrative(s));
+  });
+  alert(lines.join("\n"));
+}
+
+// ===== Geração de PDF do Relatório de Rastreio =====
+
+async function generateTraceReportPdf(eventId) {
+  if (typeof PDFLib === "undefined") {
+    showToast("Biblioteca de PDF (pdf-lib) ausente — não é possível gerar o PDF.", "error");
+    console.error("PDFLib indisponível (pdf-lib.min.js).");
+    return;
+  }
+  const evt = getEventById(eventId);
+  if (!evt) { showToast("Evento não encontrado.", "error"); return; }
+  let data;
+  try { data = JSON.parse(evt.detail); } catch (_) { showToast("Dados do relatório inválidos.", "error"); return; }
+  if (!data.steps || data.steps.length === 0) { showToast("O relatório não possui etapas.", "error"); return; }
+
+  showToast("Gerando PDF do relatório de rastreio...", "info");
+
+  try {
+    const { PDFDocument, rgb, StandardFonts } = PDFLib;
+    const pdfDoc = await PDFDocument.create();
+    const fontN = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const fontB = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const fontM = await pdfDoc.embedFont(StandardFonts.Courier);
+
+    const PAGE_W = 595.28, PAGE_H = 841.89;
+    const ML = 50, MR = 50, MT = 50, MB = 55;
+    const LH = 14;
+    const MAXW = PAGE_W - ML - MR;
+
+    let page = pdfDoc.addPage([PAGE_W, PAGE_H]);
+    let curY = PAGE_H - MT;
+    let pageNum = 1;
+
+    function footer() {
+      page.drawText("Página " + pageNum, { x: PAGE_W - MR - 50, y: 30, size: 8, font: fontN, color: rgb(0.5,0.5,0.55) });
+    }
+    footer();
+
+    function newPage() {
+      page = pdfDoc.addPage([PAGE_W, PAGE_H]);
+      curY = PAGE_H - MT;
+      pageNum++;
+      footer();
+    }
+    function ensure(needed) { if (curY - needed < MB) newPage(); }
+
+    function fontFor(style) {
+      if (style === "bold") return fontB;
+      if (style === "mono") return fontM;
+      return fontN;
+    }
+    function tw(str, size, font) { return font.widthOfTextAtSize(str, size); }
+
+    function wrap(text, size, font, maxw) {
+      const out = [];
+      const paras = String(text).split("\n");
+      for (const para of paras) {
+        if (para.trim() === "") { out.push(""); continue; }
+        const words = para.split(/\s+/);
+        let line = "";
+        for (const word of words) {
+          const test = line ? line + " " + word : word;
+          if (tw(test, size, font) > maxw && line) { out.push(line); line = word; }
+          else line = test;
+        }
+        if (line) out.push(line);
+      }
+      return out;
+    }
+
+    function addText(text, size, style, color, indent) {
+      text = cleanTextForPdf(String(text == null ? "" : text));
+      const font = fontFor(style);
+      const c = color || [0.12,0.12,0.16];
+      const x = ML + (indent || 0);
+      for (const line of wrap(text, size, font, MAXW - (indent || 0))) {
+        ensure(LH);
+        page.drawText(line, { x, y: curY, size, font, color: rgb(c[0],c[1],c[2]) });
+        curY -= LH;
+      }
+    }
+    function spacer(h) { curY -= h; }
+    function rule() {
+      ensure(8);
+      page.drawLine({ start:{x:ML,y:curY}, end:{x:PAGE_W-MR,y:curY}, thickness:0.5, color:rgb(0.7,0.7,0.75) });
+      curY -= 8;
+    }
+    function heading(text) {
+      ensure(LH + 6);
+      spacer(4);
+      addText(text, 11, "bold", [0.2,0.25,0.3]);
+      spacer(2);
+    }
+    function field(label, value) {
+      if (value === undefined || value === null || value === "") return;
+      addText(label + ": " + value, 9.5, false);
+    }
+
+    async function drawImage(dataUrl, caption) {
+      try {
+        const imgData = await dataUrlToJpegBytes(dataUrl, 1000, 800, 0.85);
+        const embedded = await pdfDoc.embedJpg(imgData.bytes);
+        let w = imgData.width, h = imgData.height;
+        const maxImgW = MAXW - 20, maxImgH = 320;
+        const scale = Math.min(maxImgW / w, maxImgH / h, 1);
+        w = Math.floor(w * scale); h = Math.floor(h * scale);
+        if (curY - (h + 18) < MB) newPage();
+        const x = ML + (MAXW - w) / 2;
+        page.drawImage(embedded, { x, y: curY - h, width: w, height: h });
+        curY -= (h + 4);
+        if (caption) addText(caption, 8, false, [0.45,0.5,0.6]);
+        spacer(6);
+      } catch (e) {
+        console.warn("Falha ao embutir imagem no PDF de rastreio:", e);
+      }
+    }
+
+    // Tabela simples
+    function drawTable(headers, rows, widths) {
+      const fs = 7.5, pad = 3, rowMinH = 12;
+      function drawRow(cells, style, bg) {
+        const wrapped = cells.map((c, i) => wrap(cleanTextForPdf(String(c == null ? "" : c)), fs, fontFor(style), widths[i] - 2*pad));
+        const maxLines = Math.max(1, ...wrapped.map(w => w.length));
+        const rowH = Math.max(rowMinH, maxLines * (fs + 2) + 2*pad);
+        if (curY - rowH < MB) { newPage(); }
+        let x = ML;
+        if (bg) {
+          page.drawRectangle({ x: ML, y: curY - rowH, width: widths.reduce((a,b)=>a+b,0), height: rowH, color: rgb(0.93,0.93,0.95) });
+        }
+        for (let i = 0; i < cells.length; i++) {
+          page.drawRectangle({ x, y: curY - rowH, width: widths[i], height: rowH, borderColor: rgb(0.7,0.7,0.75), borderWidth: 0.5 });
+          let ty = curY - pad - fs;
+          for (const ln of wrapped[i]) {
+            page.drawText(ln, { x: x + pad, y: ty, size: fs, font: fontFor(style), color: rgb(0.12,0.12,0.16) });
+            ty -= (fs + 2);
+          }
+          x += widths[i];
+        }
+        curY -= rowH;
+      }
+      drawRow(headers, "bold", true);
+      for (const r of rows) drawRow(r, false, false);
+    }
+
+    // ---------- Cabeçalho institucional ----------
+    let textX = ML;
+    if (institutionConfig.logoDataUrl) {
+      try {
+        const logo = await dataUrlToJpegBytes(institutionConfig.logoDataUrl, 300, 300, 0.95);
+        const emb = await pdfDoc.embedJpg(logo.bytes);
+        let w = logo.width, h = logo.height;
+        const s = Math.min(55/w, 55/h, 1); w = Math.floor(w*s); h = Math.floor(h*s);
+        page.drawImage(emb, { x: ML, y: curY - h, width: w, height: h });
+        textX = ML + w + 15;
+      } catch (e) { console.warn("logo:", e); }
+    }
+    page.drawText(cleanTextForPdf((institutionConfig.name || "FÊNIX AUDIT").toUpperCase()), { x: textX, y: curY - 12, size: 11, font: fontB, color: rgb(0.2,0.25,0.3) });
+    page.drawText("Relatório de Rastreio de Transações", { x: textX, y: curY - 28, size: 9, font: fontN, color: rgb(0.3,0.3,0.4) });
+    curY -= 48;
+    page.drawLine({ start:{x:ML,y:curY}, end:{x:PAGE_W-MR,y:curY}, thickness:1.5, color:rgb(0.3,0.3,0.35) });
+    curY -= 14;
+
+    // ---------- Título ----------
+    addText(data.reportTitle || "Relatório de Rastreio de Transações", 15, "bold", [0.15,0.15,0.2]);
+    spacer(6);
+
+    // ---------- Identificação do caso ----------
+    heading("1. IDENTIFICAÇÃO");
+    field("Número do procedimento/caso", data.procedureNumber);
+    field("Unidade responsável", data.unit);
+    field("Analista responsável", data.analyst);
+    field("Autoridade demandante", data.authority);
+    field("Rede principal analisada", data.mainNetwork);
+    field("Ativo principal", data.mainAsset);
+    field("Período analisado", (data.periodStart || "—") + " a " + (data.periodEnd || "—"));
+    field("Ferramentas utilizadas", data.tools);
+    spacer(4); rule();
+
+    // ---------- Objetivo ----------
+    if (data.objective) { heading("2. OBJETIVO DA ANÁLISE"); addText(data.objective, 9.5, false); spacer(4); rule(); }
+    // ---------- Metodologia ----------
+    if (data.methodology) { heading("3. METODOLOGIA"); addText(data.methodology, 9.5, false); spacer(4); rule(); }
+    // ---------- Síntese inicial ----------
+    if (data.initialSummary) { heading("4. SÍNTESE INICIAL DO FLUXO"); addText(data.initialSummary, 9.5, false); spacer(4); rule(); }
+
+    // ---------- Etapas ----------
+    heading("5. ETAPAS DO FLUXO TRANSACIONAL");
+    spacer(2);
+    for (const s of data.steps) {
+      ensure(LH * 4);
+      addText("Etapa " + s.order + (s.title ? " — " + s.title : ""), 10.5, "bold", [0.2,0.3,0.45]);
+      spacer(2);
+      addText(generateTraceNarrative(s), 9.5, false);
+      if (s.originAddress || s.destinationAddress) {
+        spacer(1);
+        if (s.originAddress) addText("Endereço de origem: " + shortenIdentifier(s.originAddress, 10, 6), 8.5, "mono", [0.35,0.4,0.5], 6);
+        if (s.destinationAddress) addText("Endereço de destino: " + shortenIdentifier(s.destinationAddress, 10, 6), 8.5, "mono", [0.35,0.4,0.5], 6);
+      }
+      spacer(3);
+      // Quadro técnico
+      const q = [];
+      if (s.network) q.push("Rede: " + s.network);
+      if (s.asset) q.push("Ativo: " + s.asset);
+      if (s.amountCrypto) q.push("Valor: " + s.amountCrypto + " " + (s.asset||""));
+      if (s.amountFiat) q.push("Estimado (fiat): " + s.amountFiat);
+      if (s.destinationAttribution) q.push("Atribuição do destino: " + s.destinationAttribution);
+      if (s.confidence) q.push("Confiança: " + s.confidence);
+      if (s.verificationTool) q.push("Ferramenta: " + s.verificationTool);
+      if (q.length) addText(q.join("  |  "), 8.5, false, [0.4,0.45,0.55], 6);
+      // Imagens vinculadas
+      for (const img of (s.images || [])) {
+        const cap = img.caption || ("Etapa " + s.order + (img.imageSource ? " — Fonte: " + img.imageSource : ""));
+        await drawImage(img.dataUrl, cap);
+      }
+      if (s.technicalNote) { addText("Observação técnica: " + s.technicalNote, 8.5, false, [0.4,0.45,0.55], 6); }
+      spacer(6);
+      rule();
+    }
+
+    // ---------- Tabela resumo ----------
+    heading("6. TABELA RESUMO");
+    spacer(2);
+    const headers = ["Etapa","Data/Hora UTC","Origem","Destino","Valor","Ativo","TXID","Classif.","Obs."];
+    const widths = [28, 62, 62, 62, 45, 36, 70, 60, 70];
+    const rows = data.steps.map(s => [
+      String(s.order),
+      ((s.dateUtc||"—") + " " + (s.timeUtc||"")).trim(),
+      s.originLabel || "—",
+      s.destinationLabel || "—",
+      s.amountCrypto || "—",
+      s.asset || "—",
+      s.txid ? shortenIdentifier(s.txid, 8, 4) : "—",
+      s.classification || "—",
+      s.technicalNote ? (s.technicalNote.length > 40 ? s.technicalNote.substring(0,40)+"…" : s.technicalNote) : "—"
+    ]);
+    drawTable(headers, rows, widths);
+    spacer(8);
+
+    // ---------- Identificadores completos ----------
+    heading("7. IDENTIFICADORES COMPLETOS");
+    spacer(2);
+    for (const s of data.steps) {
+      ensure(LH * 3);
+      addText("Etapa " + s.order + (s.title ? " — " + s.title : ""), 9, "bold");
+      if (s.originAddress) addText("Origem: " + s.originAddress, 8, "mono", [0.3,0.35,0.4], 6);
+      if (s.destinationAddress) addText("Destino: " + s.destinationAddress, 8, "mono", [0.3,0.35,0.4], 6);
+      if (s.txid) addText("TXID: " + s.txid, 8, "mono", [0.3,0.35,0.4], 6);
+      if (s.explorerUrl) addText("Explorador: " + s.explorerUrl, 8, false, [0.3,0.4,0.6], 6);
+      spacer(3);
+    }
+    rule();
+
+    // ---------- Conclusão ----------
+    if (data.technicalConclusion) { heading("8. CONCLUSÃO TÉCNICA"); addText(data.technicalConclusion, 9.5, false); spacer(4); rule(); }
+    // ---------- Providência ----------
+    if (data.suggestedMeasure) { heading("9. PROVIDÊNCIA SUGERIDA"); addText(data.suggestedMeasure, 9.5, false); spacer(4); rule(); }
+
+    // ---------- Assinatura ----------
+    heading("10. RESPONSÁVEL");
+    spacer(10);
+    addText("_______________________________________", 10, false);
+    addText(data.analyst || "Analista responsável", 9.5, "bold");
+    if (data.unit) addText(data.unit, 8.5, false, [0.4,0.45,0.55]);
+    addText("Documento gerado localmente em " + formatDateTime(new Date().toISOString()), 7.5, false, [0.5,0.5,0.6]);
+
+    const bytes = await pdfDoc.save();
+    const safe = (data.reportTitle || "rastreio").replace(/[^a-zA-Z0-9]/g, "_").substring(0, 40);
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2,"0");
+    const ds = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}`;
+    downloadFile(`relatorio-rastreio-${safe}-${ds}.pdf`, bytes, "application/pdf");
+    showToast("PDF do relatório de rastreio gerado!", "success");
+  } catch (e) {
+    console.error("Erro ao gerar PDF do rastreio:", e);
+    showToast("Erro ao gerar PDF do relatório de rastreio.", "error");
+  }
+}
+
+// ===== Geração de DOCX do Relatório de Rastreio =====
+// DOCX construído manualmente (WordprocessingML) e empacotado com JSZip — sem dependências externas
+
+function _xmlEsc(str) {
+  return String(str == null ? "" : str)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&apos;");
+}
+
+function _dataUrlToBytes(dataUrl) {
+  const base64 = dataUrl.split(",")[1];
+  const bin = atob(base64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+
+function _imgDimensions(dataUrl) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve({ width: img.width, height: img.height });
+    img.onerror = () => resolve({ width: 400, height: 300 });
+    img.src = dataUrl;
+  });
+}
+
+async function generateTraceReportDocx(eventId) {
+  if (typeof JSZip === "undefined") {
+    showToast("Biblioteca de empacotamento (JSZip) ausente — não é possível gerar o DOCX.", "error");
+    console.error("JSZip indisponível (jszip.min.js).");
+    return;
+  }
+  const evt = getEventById(eventId);
+  if (!evt) { showToast("Evento não encontrado.", "error"); return; }
+  let data;
+  try { data = JSON.parse(evt.detail); } catch (_) { showToast("Dados do relatório inválidos.", "error"); return; }
+  if (!data.steps || data.steps.length === 0) { showToast("O relatório não possui etapas.", "error"); return; }
+
+  showToast("Gerando DOCX do relatório de rastreio...", "info");
+
+  try {
+    const EMU_PER_PX = 9525;
+    const MAX_IMG_PX = 480;
+    const mediaFiles = []; // {name, bytes}
+    const rels = [];       // {id, target}
+    let relCounter = 0;
+    let docPrId = 1;
+
+    function P(text, opts) {
+      opts = opts || {};
+      const align = opts.align ? `<w:jc w:val="${opts.align}"/>` : "";
+      const sz = opts.size ? opts.size * 2 : 22; // half-points
+      const rpr = `<w:rPr>${opts.bold ? "<w:b/>" : ""}${opts.mono ? '<w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/>' : ""}<w:sz w:val="${sz}"/>${opts.color ? `<w:color w:val="${opts.color}"/>` : ""}</w:rPr>`;
+      const ppr = `<w:pPr>${align}${opts.spaceBefore ? `<w:spacing w:before="${opts.spaceBefore}"/>` : ""}</w:pPr>`;
+      // múltiplas linhas viram <w:br/>
+      const parts = String(text == null ? "" : text).split("\n");
+      let runText = "";
+      parts.forEach((p, i) => {
+        if (i > 0) runText += "<w:br/>";
+        runText += `<w:t xml:space="preserve">${_xmlEsc(p)}</w:t>`;
+      });
+      return `<w:p>${ppr}<w:r>${rpr}${runText}</w:r></w:p>`;
+    }
+
+    function H(text, size) {
+      return P(text, { bold: true, size: size || 13, spaceBefore: 200, color: "2E3A4E" });
+    }
+
+    async function IMG(dataUrl, caption) {
+      relCounter++;
+      const rId = "rIdImg" + relCounter;
+      const fileName = "image" + relCounter + ".jpeg";
+      mediaFiles.push({ name: fileName, bytes: _dataUrlToBytes(dataUrl) });
+      rels.push({ id: rId, target: "media/" + fileName });
+      const dim = await _imgDimensions(dataUrl);
+      let w = dim.width, h = dim.height;
+      if (w > MAX_IMG_PX) { const s = MAX_IMG_PX / w; w = Math.round(w*s); h = Math.round(h*s); }
+      const cx = w * EMU_PER_PX, cy = h * EMU_PER_PX;
+      docPrId++;
+      const drawing = `<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:drawing>` +
+        `<wp:inline distT="0" distB="0" distL="0" distR="0">` +
+        `<wp:extent cx="${cx}" cy="${cy}"/><wp:effectExtent l="0" t="0" r="0" b="0"/>` +
+        `<wp:docPr id="${docPrId}" name="Imagem${docPrId}"/>` +
+        `<wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/></wp:cNvGraphicFramePr>` +
+        `<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">` +
+        `<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">` +
+        `<pic:nvPicPr><pic:cNvPr id="${docPrId}" name="Imagem${docPrId}"/><pic:cNvPicPr/></pic:nvPicPr>` +
+        `<pic:blipFill><a:blip r:embed="${rId}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>` +
+        `<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>` +
+        `</pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`;
+      let out = drawing;
+      if (caption) out += P(caption, { size: 8, color: "666666", align: "center" });
+      return out;
+    }
+
+    function cell(text, w, opts) {
+      opts = opts || {};
+      return `<w:tc><w:tcPr><w:tcW w:w="${w}" w:type="dxa"/></w:tcPr>${P(text, opts)}</w:tc>`;
+    }
+    function table(headers, rows, widths) {
+      const borders = `<w:tblBorders>` +
+        ["top","left","bottom","right","insideH","insideV"].map(b => `<w:${b} w:val="single" w:sz="4" w:space="0" w:color="999999"/>`).join("") +
+        `</w:tblBorders>`;
+      let xml = `<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/>${borders}</w:tblPr>`;
+      xml += `<w:tr>` + headers.map((h,i) => cell(h, widths[i], { bold: true, size: 8 })).join("") + `</w:tr>`;
+      for (const r of rows) {
+        xml += `<w:tr>` + r.map((c,i) => cell(c, widths[i], { size: 8 })).join("") + `</w:tr>`;
+      }
+      xml += `</w:tbl>`;
+      return xml;
+    }
+
+    let body = "";
+    // Cabeçalho institucional
+    if (institutionConfig.logoDataUrl) {
+      try { body += await IMG(institutionConfig.logoDataUrl, null); } catch (_) {}
+    }
+    body += P((institutionConfig.name || "FÊNIX AUDIT").toUpperCase(), { bold: true, size: 12, align: "center", color: "2E3A4E" });
+    body += P(data.reportTitle || "Relatório de Rastreio de Transações", { bold: true, size: 16, align: "center" });
+    body += P("Relatório de Rastreio de Transações", { size: 10, align: "center", color: "666666" });
+
+    // Identificação
+    body += H("1. Identificação");
+    const idMap = [
+      ["Número do procedimento/caso", data.procedureNumber],
+      ["Unidade responsável", data.unit],
+      ["Analista responsável", data.analyst],
+      ["Autoridade demandante", data.authority],
+      ["Rede principal analisada", data.mainNetwork],
+      ["Ativo principal", data.mainAsset],
+      ["Período analisado", (data.periodStart || "—") + " a " + (data.periodEnd || "—")],
+      ["Ferramentas utilizadas", data.tools]
+    ];
+    idMap.forEach(([k,v]) => { if (v) body += P(k + ": " + v, { size: 10 }); });
+
+    if (data.objective) { body += H("2. Objetivo da análise"); body += P(data.objective, { size: 10 }); }
+    if (data.methodology) { body += H("3. Metodologia"); body += P(data.methodology, { size: 10 }); }
+    if (data.initialSummary) { body += H("4. Síntese inicial do fluxo"); body += P(data.initialSummary, { size: 10 }); }
+
+    // Etapas
+    body += H("5. Etapas do fluxo transacional");
+    for (const s of data.steps) {
+      body += P("Etapa " + s.order + (s.title ? " — " + s.title : ""), { bold: true, size: 12, color: "33486F", spaceBefore: 150 });
+      body += P(generateTraceNarrative(s), { size: 10 });
+      if (s.originAddress) body += P("Endereço de origem: " + shortenIdentifier(s.originAddress, 10, 6), { size: 9, mono: true });
+      if (s.destinationAddress) body += P("Endereço de destino: " + shortenIdentifier(s.destinationAddress, 10, 6), { size: 9, mono: true });
+      const q = [];
+      if (s.network) q.push("Rede: " + s.network);
+      if (s.asset) q.push("Ativo: " + s.asset);
+      if (s.amountCrypto) q.push("Valor: " + s.amountCrypto + " " + (s.asset||""));
+      if (s.amountFiat) q.push("Estimado (fiat): " + s.amountFiat);
+      if (s.destinationAttribution) q.push("Atribuição: " + s.destinationAttribution);
+      if (s.confidence) q.push("Confiança: " + s.confidence);
+      if (s.verificationTool) q.push("Ferramenta: " + s.verificationTool);
+      if (q.length) body += P(q.join("  |  "), { size: 9, color: "666666" });
+      for (const img of (s.images || [])) {
+        const cap = img.caption || ("Etapa " + s.order + (img.imageSource ? " — Fonte: " + img.imageSource : ""));
+        try { body += await IMG(img.dataUrl, cap); } catch (e) { console.warn("img docx:", e); }
+      }
+      if (s.technicalNote) body += P("Observação técnica: " + s.technicalNote, { size: 9, color: "666666" });
+    }
+
+    // Tabela resumo
+    body += H("6. Tabela resumo");
+    const headers = ["Etapa","Data/Hora UTC","Origem","Destino","Valor","Ativo","TXID","Classif.","Obs."];
+    const widths = [500, 1100, 1100, 1100, 800, 600, 1300, 1100, 1300];
+    const rows = data.steps.map(s => [
+      String(s.order),
+      ((s.dateUtc||"—") + " " + (s.timeUtc||"")).trim(),
+      s.originLabel || "—",
+      s.destinationLabel || "—",
+      s.amountCrypto || "—",
+      s.asset || "—",
+      s.txid ? shortenIdentifier(s.txid, 8, 4) : "—",
+      s.classification || "—",
+      s.technicalNote || "—"
+    ]);
+    body += table(headers, rows, widths);
+
+    // Identificadores completos
+    body += H("7. Identificadores completos");
+    for (const s of data.steps) {
+      body += P("Etapa " + s.order + (s.title ? " — " + s.title : ""), { bold: true, size: 9 });
+      if (s.originAddress) body += P("Origem: " + s.originAddress, { size: 9, mono: true });
+      if (s.destinationAddress) body += P("Destino: " + s.destinationAddress, { size: 9, mono: true });
+      if (s.txid) body += P("TXID: " + s.txid, { size: 9, mono: true });
+      if (s.explorerUrl) body += P("Explorador: " + s.explorerUrl, { size: 9, color: "2E5AA8" });
+    }
+
+    if (data.technicalConclusion) { body += H("8. Conclusão técnica"); body += P(data.technicalConclusion, { size: 10 }); }
+    if (data.suggestedMeasure) { body += H("9. Providência sugerida"); body += P(data.suggestedMeasure, { size: 10 }); }
+
+    body += H("10. Responsável");
+    body += P("\n_______________________________________", { size: 10 });
+    body += P(data.analyst || "Analista responsável", { bold: true, size: 10 });
+    if (data.unit) body += P(data.unit, { size: 9, color: "666666" });
+    body += P("Documento gerado localmente em " + formatDateTime(new Date().toISOString()), { size: 8, color: "888888" });
+
+    const sectPr = `<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>`;
+    const documentXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"><w:body>${body}${sectPr}</w:body></w:document>`;
+
+    const contentTypes = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="jpeg" ContentType="image/jpeg"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>`;
+
+    const mainRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`;
+
+    let docRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">`;
+    rels.forEach(r => {
+      docRels += `<Relationship Id="${r.id}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="${r.target}"/>`;
+    });
+    docRels += `</Relationships>`;
+
+    const zip = new JSZip();
+    zip.file("[Content_Types].xml", contentTypes);
+    zip.folder("_rels").file(".rels", mainRels);
+    const word = zip.folder("word");
+    word.file("document.xml", documentXml);
+    word.folder("_rels").file("document.xml.rels", docRels);
+    const media = word.folder("media");
+    mediaFiles.forEach(m => media.file(m.name, m.bytes));
+
+    const blob = await zip.generateAsync({ type: "blob", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+    const safe = (data.reportTitle || "rastreio").replace(/[^a-zA-Z0-9]/g, "_").substring(0, 40);
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2,"0");
+    const ds = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}`;
+    downloadFile(`relatorio-rastreio-${safe}-${ds}.docx`, blob, "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+    showToast("DOCX do relatório de rastreio gerado!", "success");
+  } catch (e) {
+    console.error("Erro ao gerar DOCX do rastreio:", e);
+    showToast("Erro ao gerar DOCX do relatório de rastreio.", "error");
+  }
 }
 
 /* ========================================
