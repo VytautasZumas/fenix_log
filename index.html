@@ -5095,7 +5095,7 @@ async function _processTraceFile(stepId, file, source) {
     return;
   }
   try {
-    const compressed = await compressImage(file, 1600, 0.85);
+    const dataUrl = await compressImageFile(file, 1280, 960, 0.82);
     addImageToTraceStep(stepId, {
       id: "img-" + Date.now() + "-" + Math.floor(Math.random() * 1000),
       name: file.name || ("print-" + Date.now() + ".jpg"),
@@ -5104,7 +5104,7 @@ async function _processTraceFile(stepId, file, source) {
       caption: "",
       imageSource: "",
       isMain: false,
-      dataUrl: compressed.dataUrl
+      dataUrl: dataUrl
     });
   } catch (e) {
     console.error("Erro ao processar imagem da etapa:", e);
