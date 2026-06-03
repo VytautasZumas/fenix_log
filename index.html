@@ -1447,7 +1447,7 @@ a { color: var(--accent-amber); text-decoration: none; }
 <div id="modalNewEvent" class="modal-overlay">
   <div class="modal">
     <div class="modal-header">
-      <h3 class="modal-title">Novo evento</h3>
+      <h3 class="modal-title" id="modalNewEventTitle">Novo evento</h3>
       <button class="modal-close" onclick="closeModal('modalNewEvent')">&times;</button>
     </div>
     <div class="form-group">
@@ -1811,7 +1811,7 @@ a { color: var(--accent-amber); text-decoration: none; }
 
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal('modalNewEvent')">Cancelar</button>
-      <button class="btn btn-primary" onclick="handleCreateEvent()">Registrar evento</button>
+      <button class="btn btn-primary" id="neSubmitBtn" onclick="handleCreateEvent()">Registrar evento</button>
     </div>
   </div>
 </div>
@@ -3361,6 +3361,9 @@ async function renderTimeline(caseId) {
               <div><strong>Período analisado:</strong> ${periodo}</div>
               <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
                 <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();viewTraceSummary('${esc(e.id)}')">👁 Visualizar resumo</button>
+                ${i === events.length - 1
+                  ? `<button class="btn btn-primary btn-sm" onclick="event.stopPropagation();editTraceReport('${esc(e.id)}')">✏️ Editar</button>`
+                  : `<span class="form-hint" style="align-self:center;">🔒 Bloqueado para edição (há eventos posteriores)</span>`}
                 <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();generateTraceReportPdf('${esc(e.id)}')">📄 Gerar PDF</button>
                 <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();generateTraceReportDocx('${esc(e.id)}')">📝 Gerar DOCX</button>
               </div>
@@ -3432,6 +3435,11 @@ function eventTypeLabel(type) {
    ======================================== */
 
 function openNewEventModal() {
+  // Sai de qualquer modo de edição de relatório de rastreio
+  window._editingTraceEventId = null;
+  document.getElementById("neType").disabled = false;
+  document.getElementById("modalNewEventTitle").textContent = "Novo evento";
+  document.getElementById("neSubmitBtn").textContent = "Registrar evento";
   document.getElementById("neType").value = "NOTA";
   document.getElementById("neSummary").value = "";
   document.getElementById("neDetail").value = "";
@@ -3574,6 +3582,45 @@ async function handleCreateEvent() {
     }
     const trSummary = data.reportTitle;
     const trDetail = JSON.stringify(data);
+
+    // ----- Modo edição: atualiza o evento existente (somente se ainda for o último da cadeia) -----
+    if (window._editingTraceEventId) {
+      const editing = getEventById(window._editingTraceEventId);
+      if (!editing) {
+        showToast("Evento a editar não encontrado.", "error");
+        window._editingTraceEventId = null;
+        return;
+      }
+      const evList = getEventsForCase(editing.caseId);
+      if (evList.length === 0 || evList[evList.length - 1].id !== editing.id) {
+        showToast("Este relatório não pode mais ser editado: há eventos posteriores na cadeia de custódia.", "error");
+        window._editingTraceEventId = null;
+        closeModal("modalNewEvent");
+        await renderTimeline(currentCaseId);
+        return;
+      }
+      // Recalcula o hash mantendo createdAt e previousHash originais (continua sendo o último evento → cadeia íntegra)
+      editing.summary = trSummary;
+      editing.detail = trDetail;
+      const payload = JSON.stringify({
+        caseId: editing.caseId,
+        type: editing.type,
+        summary: trSummary,
+        detail: trDetail,
+        createdAt: editing.createdAt,
+        previousHash: editing.previousHash
+      });
+      editing.hash = await computeSha256Hex(payload);
+      await saveStateToDb();
+      window._editingTraceEventId = null;
+      window._traceReportData = createEmptyTraceReportData();
+      window._traceActiveStepId = null;
+      closeModal("modalNewEvent");
+      await renderTimeline(currentCaseId);
+      showToast("Relatório de rastreio atualizado!", "success");
+      return;
+    }
+
     const evt = await createCustodyEvent(currentCaseId, type, trSummary, trDetail);
     if (!appState.eventsByCase[currentCaseId]) appState.eventsByCase[currentCaseId] = [];
     appState.eventsByCase[currentCaseId].push(evt);
@@ -5113,6 +5160,44 @@ function viewTraceSummary(eventId) {
     lines.push("  " + generateTraceNarrative(s));
   });
   alert(lines.join("\n"));
+}
+
+// ===== Edição do relatório (somente enquanto for o último evento da cadeia) =====
+
+function isTraceReportEditable(eventId) {
+  const evt = getEventById(eventId);
+  if (!evt) return false;
+  const events = getEventsForCase(evt.caseId);
+  return events.length > 0 && events[events.length - 1].id === eventId;
+}
+
+function editTraceReport(eventId) {
+  const evt = getEventById(eventId);
+  if (!evt) { showToast("Evento não encontrado.", "error"); return; }
+  if (!isTraceReportEditable(eventId)) {
+    showToast("Este relatório não pode mais ser editado: há eventos posteriores na cadeia de custódia.", "error");
+    renderTimeline(currentCaseId);
+    return;
+  }
+  let data;
+  try { data = JSON.parse(evt.detail); } catch (_) { data = createEmptyTraceReportData(); }
+
+  window._editingTraceEventId = eventId;
+  window._traceReportData = data;
+  window._traceActiveStepId = null;
+
+  // Trava o tipo durante a edição e ajusta rótulos do modal
+  const typeSel = document.getElementById("neType");
+  typeSel.value = "RELATORIO_RASTREIO";
+  typeSel.disabled = true;
+  document.getElementById("modalNewEventTitle").textContent = "Editar relatório de rastreio";
+  document.getElementById("neSubmitBtn").textContent = "Salvar alterações";
+  document.getElementById("neSummary").value = "";
+  document.getElementById("neDetail").value = "";
+
+  populateTraceReportForm(data);
+  toggleSeedFields();
+  openModal("modalNewEvent");
 }
 
 // ===== Geração de PDF do Relatório de Rastreio =====
