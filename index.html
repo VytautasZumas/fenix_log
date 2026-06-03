@@ -4993,18 +4993,21 @@ function populateTraceReportForm(data) {
 
 // ===== Imagens das etapas =====
 
-function compressImage(file, maxWidth = 1600, quality = 0.85) {
+function compressImage(file, maxWidth = 1280, maxHeight = 960, quality = 0.82) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const img = new Image();
       img.onload = () => {
         let w = img.width, h = img.height;
-        if (w > maxWidth) { const scale = maxWidth / w; w = Math.round(w * scale); h = Math.round(h * scale); }
+        if (w > maxWidth || h > maxHeight) {
+          const scale = Math.min(maxWidth / w, maxHeight / h);
+          w = Math.round(w * scale);
+          h = Math.round(h * scale);
+        }
         const canvas = document.createElement("canvas");
         canvas.width = w; canvas.height = h;
         const ctx = canvas.getContext("2d");
-        // Mantém PNG quando há transparência relevante seria ideal; aqui padronizamos JPEG para legibilidade/tamanho
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, w, h);
         ctx.drawImage(img, 0, 0, w, h);
@@ -5299,15 +5302,13 @@ async function generateTraceReportPdf(eventId) {
 
     async function drawImage(dataUrl, caption) {
       try {
-        const imgData = await dataUrlToJpegBytes(dataUrl, 1000, 800, 0.85);
+        const imgData = await dataUrlToJpegBytes(dataUrl, 500, 400);
         const embedded = await pdfDoc.embedJpg(imgData.bytes);
         let w = imgData.width, h = imgData.height;
-        const maxImgW = MAXW - 20, maxImgH = 320;
-        const scale = Math.min(maxImgW / w, maxImgH / h, 1);
+        const scale = Math.min(260 / w, 140 / h, 1);
         w = Math.floor(w * scale); h = Math.floor(h * scale);
-        if (curY - (h + 18) < MB) newPage();
-        const x = ML + (MAXW - w) / 2;
-        page.drawImage(embedded, { x, y: curY - h, width: w, height: h });
+        ensureSpace(h + 15);
+        page.drawImage(embedded, { x: ML + 20, y: curY - h, width: w, height: h });
         curY -= (h + 4);
         if (caption) addText(caption, 8, false, [0.45,0.5,0.6]);
         spacer(6);
