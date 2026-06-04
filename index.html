@@ -1747,28 +1747,6 @@ a { color: var(--accent-amber); text-decoration: none; }
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Rede principal analisada</label>
-          <select id="trMainNetwork" class="form-select">
-            <option value="">Selecione</option>
-            <option>Bitcoin</option>
-            <option>Ethereum</option>
-            <option>Tron</option>
-            <option>BSC</option>
-            <option>Polygon</option>
-            <option>Arbitrum</option>
-            <option>Optimism</option>
-            <option>Base</option>
-            <option>Solana</option>
-            <option>Outra</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Ativo principal</label>
-          <input id="trMainAsset" class="form-input" placeholder="Ex: BTC, ETH, USDT, USDC">
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
           <label class="form-label">Período inicial analisado</label>
           <input id="trPeriodStart" type="date" class="form-input">
         </div>
@@ -2568,8 +2546,9 @@ async function handleDeleteCase(caseId) {
 let dragCounter = 0;
 
 window.addEventListener("dragenter", function(e) {
+  if (currentCaseId) return;
   e.preventDefault();
-  // Só ativa a overlay se estiver na seção de lista de casos
+  // Só ativa a overlay se estiver na seção de lista de casos e nenhum caso aberto
   const caseListSection = document.getElementById("sectionCaseList");
   if (caseListSection && caseListSection.style.display !== "none") {
     dragCounter++;
@@ -2580,10 +2559,12 @@ window.addEventListener("dragenter", function(e) {
 });
 
 window.addEventListener("dragover", function(e) {
+  if (currentCaseId) return; // deixa elementos filhos tratarem o drag quando um caso está aberto
   e.preventDefault();
 });
 
 window.addEventListener("dragleave", function(e) {
+  if (currentCaseId) return;
   e.preventDefault();
   const caseListSection = document.getElementById("sectionCaseList");
   if (caseListSection && caseListSection.style.display !== "none") {
@@ -2596,10 +2577,10 @@ window.addEventListener("dragleave", function(e) {
 });
 
 window.addEventListener("drop", function(e) {
-  e.preventDefault();
   dragCounter = 0;
   document.getElementById("dragDropOverlay").classList.remove("active");
-  
+  if (currentCaseId) return; // nunca importa JSON quando um caso está aberto
+  e.preventDefault();
   const caseListSection = document.getElementById("sectionCaseList");
   if (caseListSection && caseListSection.style.display !== "none") {
     const files = e.dataTransfer.files;
@@ -2625,7 +2606,11 @@ function handleImportFile(file) {
   reader.onload = function(e) {
     try {
       const data = JSON.parse(e.target.result);
-      validateAndImportCase(data);
+      if (data.exportType === "transaction_event") {
+        importTransactionEvent(data);
+      } else {
+        validateAndImportCase(data);
+      }
     } catch (err) {
       showToast("Erro ao processar o arquivo JSON. Arquivo corrompido ou inválido.", "error");
     }
@@ -3363,8 +3348,6 @@ async function renderTimeline(caseId) {
             <div class="timeline-detail" style="border-left-color:var(--accent-amber, #f59e0b);">
               <div><strong>Tipo:</strong> Relatório de Rastreio de Transações</div>
               <div><strong>Título:</strong> ${esc(tr.reportTitle || '—')}</div>
-              <div><strong>Rede principal:</strong> ${esc(tr.mainNetwork || '—')}</div>
-              <div><strong>Ativo principal:</strong> ${esc(tr.mainAsset || '—')}</div>
               <div><strong>Etapas:</strong> ${steps.length} &nbsp;|&nbsp; <strong>Imagens:</strong> ${imgCount}</div>
               <div><strong>Período analisado:</strong> ${periodo}</div>
               ${await (async () => {
@@ -3393,6 +3376,8 @@ async function renderTimeline(caseId) {
                   : `<span class="form-hint" style="align-self:center;">🔒 Bloqueado para edição (há eventos posteriores)</span>`}
                 <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();generateTraceReportPdf('${esc(e.id)}')">📄 Gerar PDF</button>
                 <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();generateTraceReportDocx('${esc(e.id)}')">📝 Gerar DOCX</button>
+                <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();exportTraceReportJson('${esc(e.id)}')">💾 Exportar JSON</button>
+                <label class="btn btn-secondary btn-sm" style="cursor:pointer;margin:0;" title="Importar JSON de rastreio para editar este relatório">📂 Importar JSON<input type="file" accept=".json,application/json" style="display:none;" onchange="event.stopPropagation();importTraceReportJson('${esc(e.id)}', this)"></label>
               </div>
             </div>`;
         } catch (_) {
@@ -4548,6 +4533,49 @@ async function handleExportJson() {
   }
 }
 
+async function handleExportTransactionJson() {
+  const c = getCaseById(currentCaseId);
+  if (!c) return;
+  const events = getEventsForCase(currentCaseId).filter(e => e.type === "TRANSACAO_APREENSAO");
+  if (events.length === 0) {
+    showToast("Nenhum evento de transação encontrado neste caso.", "error");
+    return;
+  }
+  const exportObj = {
+    version: "1.0",
+    application: "Fênix Audit",
+    exportType: "transaction_event",
+    exportedAt: new Date().toISOString(),
+    sourceCase: { caseNumber: c.caseNumber, title: c.title },
+    events: events
+  };
+  const safeName = c.caseNumber.replace(/[^a-zA-Z0-9]/g, "_");
+  downloadFile(`fnix-transacao-${safeName}.json`, JSON.stringify(exportObj, null, 2), "application/json");
+  showToast(`${events.length} evento(s) de transação exportado(s) como JSON.`, "success");
+}
+
+async function importTransactionEvent(data) {
+  if (!currentCaseId) {
+    showToast("Abra ou crie um caso antes de importar eventos de transação.", "error");
+    return;
+  }
+  if (!data.events || data.events.length === 0) {
+    showToast("Nenhum evento de transação encontrado no arquivo.", "error");
+    return;
+  }
+  const sourceLabel = data.sourceCase ? ` (caso ${data.sourceCase.caseNumber})` : "";
+  if (!appState.eventsByCase[currentCaseId]) appState.eventsByCase[currentCaseId] = [];
+  for (const ev of data.events) {
+    const summary = `Transação importada${sourceLabel}`;
+    const newEvt = await createCustodyEvent(currentCaseId, "TRANSACAO_APREENSAO", summary, ev.detail);
+    newEvt.originalCaseId = ev.caseId;
+    appState.eventsByCase[currentCaseId].push(newEvt);
+  }
+  await saveStateToDb();
+  showToast(`${data.events.length} evento(s) de transação importado(s) com sucesso.`, "success");
+  renderTimeline(currentCaseId);
+}
+
 function downloadFile(filename, content, mimeType) {
   let blob;
   if (content instanceof Uint8Array || content instanceof ArrayBuffer) {
@@ -4944,12 +4972,12 @@ function renderTraceSteps() {
         <div class="form-group"><label class="form-label">Título curto da etapa</label>
           <input id="${p}title" class="form-input" value="${esc(s.title || '')}" placeholder="Ex: Recebimento inicial"></div>
         <div class="form-row">
-          <div class="form-group"><label class="form-label">Data UTC</label><input id="${p}dateUtc" type="date" class="form-input" value="${esc(s.dateUtc || '')}"></div>
-          <div class="form-group"><label class="form-label">Hora UTC</label><input id="${p}timeUtc" type="time" class="form-input" value="${esc(s.timeUtc || '')}"></div>
-          <div class="form-group"><label class="form-label">Data/hora local (opcional)</label><input id="${p}localDateTime" class="form-input" value="${esc(s.localDateTime || '')}"></div>
+          <div class="form-group"><label class="form-label">Data UTC</label><input id="${p}dateUtc" type="date" class="form-input" value="${esc(s.dateUtc || '')}" onchange="autoFillLocalTime('${s.id}')"></div>
+          <div class="form-group"><label class="form-label">Hora UTC</label><input id="${p}timeUtc" type="time" class="form-input" value="${esc(s.timeUtc || '')}" onchange="autoFillLocalTime('${s.id}')"></div>
+          <div class="form-group"><label class="form-label">Data/hora local (UTC-3)</label><input id="${p}localDateTime" class="form-input" value="${esc(s.localDateTime || '')}" placeholder="Preenchido automaticamente"></div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label class="form-label">Rede</label><select id="${p}network" class="form-select">${netOpts}</select></div>
+          <div class="form-group"><label class="form-label">Rede</label><select id="${p}network" class="form-select" onchange="autoFillExplorerUrl('${s.id}')">${netOpts}</select></div>
           <div class="form-group"><label class="form-label">Ativo</label><input id="${p}asset" class="form-input" value="${esc(s.asset || '')}" placeholder="Ex: BTC"></div>
         </div>
         <div class="form-row">
@@ -4957,19 +4985,15 @@ function renderTraceSteps() {
           <div class="form-group"><label class="form-label">Valor estimado em fiat (opcional)</label><input id="${p}amountFiat" class="form-input" value="${esc(s.amountFiat || '')}" placeholder="Ex: R$ 500.000"></div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label class="form-label">Origem (rótulo/entidade)</label><input id="${p}originLabel" class="form-input" value="${esc(s.originLabel || '')}"></div>
-          <div class="form-group"><label class="form-label">Destino (rótulo/entidade)</label><input id="${p}destinationLabel" class="form-input" value="${esc(s.destinationLabel || '')}"></div>
+          <div class="form-group"><label class="form-label">Origem (rótulo/entidade)</label><input id="${p}originLabel" class="form-input" value="${esc(s.originLabel || '')}" placeholder="Preenchido ao inserir endereço"></div>
+          <div class="form-group"><label class="form-label">Destino (rótulo/entidade)</label><input id="${p}destinationLabel" class="form-input" value="${esc(s.destinationLabel || '')}" placeholder="Preenchido ao inserir endereço"></div>
         </div>
-        <div class="form-group"><label class="form-label">Endereço de origem (completo)</label><input id="${p}originAddress" class="form-input" style="font-family:var(--font-mono);font-size:0.82rem;" value="${esc(s.originAddress || '')}"></div>
-        <div class="form-group"><label class="form-label">Endereço de destino (completo)</label><input id="${p}destinationAddress" class="form-input" style="font-family:var(--font-mono);font-size:0.82rem;" value="${esc(s.destinationAddress || '')}"></div>
-        <div class="form-group"><label class="form-label">TXID (completo)</label><input id="${p}txid" class="form-input" style="font-family:var(--font-mono);font-size:0.82rem;" value="${esc(s.txid || '')}"></div>
-        <div class="form-group"><label class="form-label">Link do explorador</label><input id="${p}explorerUrl" class="form-input" value="${esc(s.explorerUrl || '')}"></div>
+        <div class="form-group"><label class="form-label">Endereço de origem (completo)</label><input id="${p}originAddress" class="form-input" style="font-family:var(--font-mono);font-size:0.82rem;" value="${esc(s.originAddress || '')}" oninput="autoFillAddressLabel('${s.id}', 'origin')"></div>
+        <div class="form-group"><label class="form-label">Endereço de destino (completo)</label><input id="${p}destinationAddress" class="form-input" style="font-family:var(--font-mono);font-size:0.82rem;" value="${esc(s.destinationAddress || '')}" oninput="autoFillAddressLabel('${s.id}', 'dest')"></div>
+        <div class="form-group"><label class="form-label">TXID (completo)</label><input id="${p}txid" class="form-input" style="font-family:var(--font-mono);font-size:0.82rem;" value="${esc(s.txid || '')}" oninput="autoFillExplorerUrl('${s.id}')"></div>
+        <div class="form-group"><label class="form-label">Link do explorador</label><input id="${p}explorerUrl" class="form-input" value="${esc(s.explorerUrl || '')}" placeholder="Preenchido automaticamente ao inserir TXID"></div>
         <div class="form-row">
-          <div class="form-group"><label class="form-label">Ferramenta de verificação</label><input id="${p}verificationTool" class="form-input" value="${esc(s.verificationTool || '')}"></div>
           <div class="form-group"><label class="form-label">Atribuição do destino</label><select id="${p}destinationAttribution" class="form-select">${attrOpts}</select></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">Grau de confiança</label><select id="${p}confidence" class="form-select">${confOpts}</select></div>
           <div class="form-group"><label class="form-label">Classificação da etapa</label><select id="${p}classification" class="form-select">${classOpts}</select></div>
         </div>
         <div class="form-group"><label class="form-label">Observação técnica</label><textarea id="${p}technicalNote" class="form-textarea">${esc(s.technicalNote || '')}</textarea></div>
@@ -4977,12 +5001,12 @@ function renderTraceSteps() {
           <label class="form-label">Imagens da etapa</label>
           <input type="file" accept="image/*" multiple style="display:none;" id="${p}fileInput" onchange="handleTraceImageUpload('${s.id}', event)">
           <div class="trace-paste-zone" tabindex="0"
-               onclick="document.getElementById('${p}fileInput').click()"
+               onclick="if(document.activeElement===this){document.getElementById('${p}fileInput').click();}else{this.focus();}"
                onpaste="handleTracePaste('${s.id}', event)"
                ondragover="event.preventDefault();this.classList.add('dragover');"
                ondragleave="this.classList.remove('dragover');"
                ondrop="handleTraceDrop('${s.id}', event)">
-            Cole aqui o print, arraste uma imagem ou clique para enviar.
+            Cole aqui o print, arraste uma imagem ou clique duas vezes para enviar arquivo.
           </div>
           <div class="trace-img-thumbs">${thumbs}</div>
         </div>
@@ -4994,7 +5018,7 @@ function renderTraceSteps() {
 // Lê os valores digitados nos cards (DOM) de volta para o objeto em memória
 function syncTraceStepsFromDom() {
   const data = ensureTraceData();
-  const fields = ["title","dateUtc","timeUtc","localDateTime","network","asset","amountCrypto","amountFiat","originLabel","destinationLabel","originAddress","destinationAddress","txid","explorerUrl","verificationTool","destinationAttribution","confidence","classification","technicalNote"];
+  const fields = ["title","dateUtc","timeUtc","localDateTime","network","asset","amountCrypto","amountFiat","originLabel","destinationLabel","originAddress","destinationAddress","txid","explorerUrl","destinationAttribution","classification","technicalNote"];
   data.steps.forEach(s => {
     const p = "trStep_" + s.id + "_";
     fields.forEach(f => {
@@ -5002,6 +5026,61 @@ function syncTraceStepsFromDom() {
       if (el) s[f] = el.value;
     });
   });
+}
+
+function autoFillLocalTime(stepId) {
+  const p = "trStep_" + stepId + "_";
+  const dateVal = (document.getElementById(p + "dateUtc") || {}).value || "";
+  const timeVal = (document.getElementById(p + "timeUtc") || {}).value || "";
+  const localEl = document.getElementById(p + "localDateTime");
+  if (!localEl) return;
+  if (!dateVal || !timeVal) return;
+  try {
+    const utcDate = new Date(dateVal + "T" + timeVal + ":00Z");
+    // UTC-3: subtract 3 hours
+    const local = new Date(utcDate.getTime() - 3 * 60 * 60 * 1000);
+    const dd = String(local.getUTCDate()).padStart(2, "0");
+    const mm = String(local.getUTCMonth() + 1).padStart(2, "0");
+    const yyyy = local.getUTCFullYear();
+    const hh = String(local.getUTCHours()).padStart(2, "0");
+    const min = String(local.getUTCMinutes()).padStart(2, "0");
+    localEl.value = `${dd}/${mm}/${yyyy} ${hh}:${min} (UTC-3)`;
+  } catch (_) {}
+}
+
+function autoFillAddressLabel(stepId, side) {
+  const p = "trStep_" + stepId + "_";
+  const addrEl = document.getElementById(p + (side === "origin" ? "originAddress" : "destinationAddress"));
+  const labelEl = document.getElementById(p + (side === "origin" ? "originLabel" : "destinationLabel"));
+  if (!addrEl || !labelEl) return;
+  const addr = addrEl.value.trim();
+  if (!addr) { labelEl.value = ""; return; }
+  if (addr.length < 10) { labelEl.value = addr; return; }
+  labelEl.value = addr.substring(0, 5) + "..." + addr.substring(addr.length - 5);
+}
+
+function autoFillExplorerUrl(stepId) {
+  const p = "trStep_" + stepId + "_";
+  const txidEl = document.getElementById(p + "txid");
+  const networkEl = document.getElementById(p + "network");
+  const urlEl = document.getElementById(p + "explorerUrl");
+  if (!txidEl || !urlEl) return;
+  const txid = txidEl.value.trim();
+  if (!txid) { urlEl.value = ""; return; }
+  const net = (networkEl ? networkEl.value : "") || "";
+  const map = {
+    "Bitcoin":   "https://blockchair.com/bitcoin/transaction/",
+    "Ethereum":  "https://etherscan.io/tx/",
+    "Tron":      "https://tronscan.org/#/transaction/",
+    "BSC":       "https://bscscan.com/tx/",
+    "Polygon":   "https://polygonscan.com/tx/",
+    "Arbitrum":  "https://arbiscan.io/tx/",
+    "Optimism":  "https://optimistic.etherscan.io/tx/",
+    "Base":      "https://basescan.org/tx/",
+    "Solana":    "https://solscan.io/tx/"
+  };
+  const base = map[net] || "https://blockchair.com/search?q=";
+  urlEl.value = base + txid;
 }
 
 function collectTraceReportDataFromForm() {
@@ -5013,8 +5092,6 @@ function collectTraceReportDataFromForm() {
   data.unit = document.getElementById("trUnit").value.trim();
   data.analyst = document.getElementById("trAnalyst").value.trim();
   data.authority = document.getElementById("trAuthority").value.trim();
-  data.mainNetwork = document.getElementById("trMainNetwork").value;
-  data.mainAsset = document.getElementById("trMainAsset").value.trim();
   data.periodStart = document.getElementById("trPeriodStart").value;
   data.periodEnd = document.getElementById("trPeriodEnd").value;
   data.tools = document.getElementById("trTools").value.trim();
@@ -5036,8 +5113,6 @@ function populateTraceReportForm(data) {
   setv("trUnit", data.unit);
   setv("trAnalyst", data.analyst);
   setv("trAuthority", data.authority);
-  setv("trMainNetwork", data.mainNetwork);
-  setv("trMainAsset", data.mainAsset);
   setv("trPeriodStart", data.periodStart);
   setv("trPeriodEnd", data.periodEnd);
   setv("trTools", data.tools);
@@ -5212,7 +5287,6 @@ function viewTraceSummary(eventId) {
   const lines = [];
   lines.push("RELATÓRIO DE RASTREIO DE TRANSAÇÕES");
   lines.push("Título: " + (data.reportTitle || "—"));
-  lines.push("Rede principal: " + (data.mainNetwork || "—") + " | Ativo: " + (data.mainAsset || "—"));
   lines.push("Período: " + (data.periodStart || "—") + " a " + (data.periodEnd || "—"));
   lines.push("Etapas: " + (data.steps ? data.steps.length : 0));
   (data.steps || []).forEach(s => {
@@ -5320,7 +5394,16 @@ async function generateTraceReportPdf(eventId) {
         if (para.trim() === "") { out.push(""); continue; }
         const words = para.split(/\s+/);
         let line = "";
-        for (const word of words) {
+        for (let word of words) {
+          // Quebra forçada de palavras sem espaço que excedam a largura da célula
+          while (word && tw(word, size, font) > maxw) {
+            let chunk = word;
+            while (chunk.length > 1 && tw(chunk, size, font) > maxw) chunk = chunk.slice(0, -1);
+            if (line) { out.push(line); line = ""; }
+            out.push(chunk);
+            word = word.slice(chunk.length);
+          }
+          if (!word) continue;
           const test = line ? line + " " + word : word;
           if (tw(test, size, font) > maxw && line) { out.push(line); line = word; }
           else line = test;
@@ -5343,13 +5426,13 @@ async function generateTraceReportPdf(eventId) {
     }
     function spacer(h) { curY -= h; }
     function rule() {
-      ensure(8);
+      ensure(22);
       page.drawLine({ start:{x:ML,y:curY}, end:{x:PAGE_W-MR,y:curY}, thickness:0.5, color:rgb(0.7,0.7,0.75) });
-      curY -= 8;
+      curY -= 22;
     }
     function heading(text) {
       ensure(LH + 6);
-      spacer(4);
+      spacer(2);
       addText(text, 11, "bold", [0.2,0.25,0.3]);
       spacer(2);
     }
@@ -5367,7 +5450,7 @@ async function generateTraceReportPdf(eventId) {
         w = Math.floor(w * scale); h = Math.floor(h * scale);
         ensure(h + 15);
         page.drawImage(embedded, { x: ML + 20, y: curY - h, width: w, height: h });
-        curY -= (h + 4);
+        curY -= (h + 10);
         if (caption) addText(caption, 8, false, [0.45,0.5,0.6]);
         spacer(6);
       } catch (e) {
@@ -5471,8 +5554,6 @@ async function generateTraceReportPdf(eventId) {
     field("Unidade responsável", data.unit);
     field("Analista responsável", data.analyst);
     field("Autoridade demandante", data.authority);
-    field("Rede principal analisada", data.mainNetwork);
-    field("Ativo principal", data.mainAsset);
     field("Período analisado", (data.periodStart || "—") + " a " + (data.periodEnd || "—"));
     field("Ferramentas utilizadas", data.tools);
     spacer(4); rule();
@@ -5662,16 +5743,23 @@ async function generateTraceReportDocx(eventId) {
       return P(text, { bold: true, size: size || 13, spaceBefore: 200, color: "2E3A4E" });
     }
 
-    async function IMG(dataUrl, caption) {
+    async function IMG(dataUrl, caption, forcedHeightEmu) {
       relCounter++;
       const rId = "rIdImg" + relCounter;
       const fileName = "image" + relCounter + ".jpeg";
       mediaFiles.push({ name: fileName, bytes: _dataUrlToBytes(dataUrl) });
       rels.push({ id: rId, target: "media/" + fileName });
       const dim = await _imgDimensions(dataUrl);
-      let w = dim.width, h = dim.height;
-      if (w > MAX_IMG_PX) { const s = MAX_IMG_PX / w; w = Math.round(w*s); h = Math.round(h*s); }
-      const cx = w * EMU_PER_PX, cy = h * EMU_PER_PX;
+      let cx, cy;
+      if (forcedHeightEmu && dim.height > 0) {
+        const ratio = dim.width / dim.height;
+        cy = forcedHeightEmu;
+        cx = Math.round(cy * ratio);
+      } else {
+        let w = dim.width, h = dim.height;
+        if (w > MAX_IMG_PX) { const s = MAX_IMG_PX / w; w = Math.round(w*s); h = Math.round(h*s); }
+        cx = w * EMU_PER_PX; cy = h * EMU_PER_PX;
+      }
       docPrId++;
       const drawing = `<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:drawing>` +
         `<wp:inline distT="0" distB="0" distL="0" distR="0">` +
@@ -5709,7 +5797,7 @@ async function generateTraceReportDocx(eventId) {
     let body = "";
     // Cabeçalho institucional
     if (institutionConfig.logoDataUrl) {
-      try { body += await IMG(institutionConfig.logoDataUrl, null); } catch (_) {}
+      try { body += await IMG(institutionConfig.logoDataUrl, null, 503622); } catch (_) {}
     }
     body += P((institutionConfig.name || "FÊNIX AUDIT").toUpperCase(), { bold: true, size: 12, align: "center", color: "2E3A4E" });
     body += P(data.reportTitle || "Relatório de Rastreio de Transações", { bold: true, size: 16, align: "center" });
@@ -5722,8 +5810,6 @@ async function generateTraceReportDocx(eventId) {
       ["Unidade responsável", data.unit],
       ["Analista responsável", data.analyst],
       ["Autoridade demandante", data.authority],
-      ["Rede principal analisada", data.mainNetwork],
-      ["Ativo principal", data.mainAsset],
       ["Período analisado", (data.periodStart || "—") + " a " + (data.periodEnd || "—")],
       ["Ferramentas utilizadas", data.tools]
     ];
@@ -5829,6 +5915,51 @@ async function generateTraceReportDocx(eventId) {
     console.error("Erro ao gerar DOCX do rastreio:", e);
     showToast("Erro ao gerar DOCX do relatório de rastreio.", "error");
   }
+}
+
+function exportTraceReportJson(eventId) {
+  const evt = getEventById(eventId);
+  if (!evt) return;
+  let data;
+  try { data = JSON.parse(evt.detail); } catch (_) { showToast("Erro ao ler dados do relatório.", "error"); return; }
+  const exportObj = {
+    version: "1.0",
+    application: "Fênix Audit",
+    exportType: "trace_report",
+    exportedAt: new Date().toISOString(),
+    sourceCaseId: evt.caseId,
+    eventId: evt.id,
+    data: data
+  };
+  const title = (data.reportTitle || "rastreio").replace(/[^a-zA-Z0-9À-ɏ]/g, "_").substring(0, 40);
+  downloadFile(`fnix-rastreio-${title}.json`, JSON.stringify(exportObj, null, 2), "application/json");
+  showToast("Relatório de rastreio exportado como JSON.", "success");
+}
+
+function importTraceReportJson(eventId, inputEl) {
+  const file = inputEl.files[0];
+  inputEl.value = "";
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      if (parsed.exportType !== "trace_report" || !parsed.data) {
+        showToast("Arquivo JSON inválido ou não é um relatório de rastreio.", "error");
+        return;
+      }
+      const evt = getEventById(eventId);
+      if (!evt) return;
+      evt.detail = JSON.stringify(parsed.data);
+      saveStateToDb().then(() => {
+        showToast("Relatório de rastreio atualizado a partir do JSON.", "success");
+        renderTimeline(currentCaseId);
+      });
+    } catch (_) {
+      showToast("Erro ao processar o arquivo JSON.", "error");
+    }
+  };
+  reader.readAsText(file);
 }
 
 /* ========================================
@@ -6021,14 +6152,14 @@ async function generatePdf(caseObj, events, attachments) {
   }
 
   function addLine() {
-    ensureSpace(10);
+    ensureSpace(14);
     page.drawLine({
       start: { x: MARGIN_L, y: curY },
       end: { x: PAGE_W - MARGIN_R, y: curY },
       thickness: 0.5,
       color: rgb(0.7, 0.7, 0.75)
     });
-    curY -= 10;
+    curY -= 14;
   }
 
   function addSpacer(h) { curY -= h; }
@@ -6360,7 +6491,9 @@ async function generatePdf(caseObj, events, attachments) {
           ySig = drawText("____________________________________________________", MARGIN_L, ySig, 9, false, [0.4, 0.4, 0.4]);
         }
         ySig -= 12;
-        curY = drawText(`${name} (${role})`, MARGIN_L, ySig, 9, false, [0.2, 0.2, 0.2]) - 15;
+        ySig = drawText(name, MARGIN_L, ySig, 9, false, [0.2, 0.2, 0.2]);
+        ySig -= 2;
+        curY = drawText("ANALISTA RESPONSÁVEL", MARGIN_L, ySig, 8, false, [0.35, 0.35, 0.4]) - 15;
       } catch (_) {}
     }
 
